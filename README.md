@@ -4,7 +4,8 @@ Ein Slotcar-Rennspiel für das iPad (läuft in jedem Browser).
 
 **Spielen:** https://makingvs.github.io/lukas-rennbahn/
 
-- Die Strecke ist eine Acht mit Brücke, Kurven und Schikanen.
+- Zwei Strecken: eine Acht mit Brücke und eine Looping-Bahn (Oval mit Schikane und Looping).
+- Im Looping musst du schnell genug sein, sonst fällt das Auto oben runter.
 - Gashebel mit dem Finger nach oben schieben = Gas, loslassen = bremsen.
 - Zu schnell in der Kurve? Dann fliegt das Auto raus.
 - Allein (Training), gegen den Computer oder zu zweit an einem iPad.

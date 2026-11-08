@@ -104,11 +104,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .card{width:min(620px,100%);max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--paper);color:var(--ink);border-radius:26px;
   box-shadow:0 30px 80px rgba(0,0,0,.55);touch-action:pan-y}
 .flag{height:18px;background:repeating-conic-gradient(var(--ink) 0 25%,var(--paper) 0 50%) 0 0/18px 18px;border-radius:26px 26px 0 0}
-.card-in{padding:22px 26px 26px;display:flex;flex-direction:column;gap:18px}
+.card-in{padding:20px 26px 24px;display:flex;flex-direction:column;gap:14px}
 .card h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,6vw,46px);line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance}
 .card h1 em{font-style:normal;color:var(--p1)}
 .card h2{font-family:var(--display);font-weight:400;font-size:clamp(26px,5vw,38px);margin:0;line-height:1.05;text-wrap:balance}
 .sub{margin:6px 0 0;font-size:16px;line-height:1.45;color:#4a4f5c}
+.trackdesc{margin:0;font-size:13px;line-height:1.4;color:#4a4f5c;min-height:2.8em}
 .field{display:flex;flex-direction:column;gap:7px}
 .field>.lbl{color:#4a4f5c;opacity:1}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:5px;background:var(--paper-2);padding:5px;border-radius:16px}
@@ -178,7 +179,15 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
     <div class="card-in">
       <div>
         <h1>Lukas' <em>Rennbahn</em></h1>
-        <p class="sub">Die Strecke ist aufgebaut, mit Kurven, Schikane und Brücke. Du gibst nur noch Gas.</p>
+        <p class="sub">Die Strecken sind aufgebaut. Du gibst nur noch Gas.</p>
+      </div>
+      <div class="field">
+        <span class="lbl">Strecke</span>
+        <div class="seg" id="segTrack">
+          <button type="button" data-v="bridge">Acht mit Brücke<small>Kurven und Schikane</small></button>
+          <button type="button" data-v="loop">Looping-Bahn<small>mit Looping</small></button>
+        </div>
+        <p class="trackdesc" id="trackDesc"></p>
       </div>
       <div class="field">
         <span class="lbl">Wer fährt?</span>
@@ -259,11 +268,43 @@ const store={get(k,d){try{const v=localStorage.getItem('rennbahn.'+k);return v==
 const W=1000,H=600,HALF=34,LANE=16;
 // Acht mit Brücke: Startgerade schräg nach oben rechts, rechte Schleife mit Schikane,
 // Brückengerade zurück nach links oben, linke Schleife mit Schikane.
-const CTRL=[[300,440],[400,370],[500,300],[600,230],[700,160],
+const CTRL_BRIDGE=[[300,440],[400,370],[500,300],[600,230],[700,160],
   [785,103],[875,88],[940,140],[955,232],[925,302],[932,385],[897,462],[825,505],[757,488],
   [700,440],[600,370],[500,300],[400,230],[300,160],
   [218,104],[128,86],[62,132],[50,212],[98,272],[90,342],[52,410],[90,492],[188,520],[258,482]];
 const CROSS={x:500,y:300};
+function defBridge(){return{kind:'bridge',ctrl:CTRL_BRIDGE,cross:CROSS,stand:[500,548],seed:7}}
+
+// Looping: Kurve mit wachsender und wieder abnehmender Krümmung, die genau einmal im Kreis herum führt.
+// Beim Einfahren und Ausfahren zeigt die Bahn in dieselbe Richtung, dazwischen kreuzt sie sich selbst.
+function loopPoints(x0,y0,S,a,pw){
+  const n=1200,ds=S/n,w=u=>Math.pow(Math.sin(Math.PI*u),pw)*(1+a*(2*u-1));
+  let Wi=0;for(let i=0;i<n;i++)Wi+=w((i+.5)/n)/n;
+  const K=2*Math.PI/(S*Wi),every=Math.round(n/(S/20));let x=0,y=0,th=0;const pts=[[x0,y0]];
+  for(let i=0;i<n;i++){const k=-K*w((i+.5)/n);th+=k*ds/2;x+=Math.cos(th)*ds;y+=Math.sin(th)*ds;th+=k*ds/2;
+    if((i+1)%every===0&&n-i>every/2)pts.push([x0+x,y0+y])}
+  pts.push([x0+x,y0+y]);
+  return pts;
+}
+// Oval im Uhrzeigersinn mit Schikane unten und Looping auf der oberen Geraden
+function defLoop(){
+  const P=[],add=(x,y)=>P.push([x,y]);
+  const arc=(cx,cy,r,a0,a1)=>{const n=Math.max(2,Math.round(Math.abs(a1-a0)/(Math.PI/6)));for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;add(cx+r*Math.cos(a),cy+r*Math.sin(a))}};
+  add(640,520);add(610,520);
+  for(let k=0;k<=6;k++){const t=k/6,s=t*t*(3-2*t);add(580-25*k,520-60*s)}
+  add(380,460);add(330,460);add(280,460);
+  arc(230,355,105,Math.PI/2,Math.PI*1.5);
+  add(290,250);add(345,250);
+  const lp=loopPoints(400,250,540,0.3,1);
+  lp.forEach(p=>add(p[0],p[1]));
+  const e=lp[lp.length-1];
+  add(e[0]+66,e[1]);add(e[0]+140,e[1]);
+  arc(790,378,142,-Math.PI/2,Math.PI/2);
+  add(740,520);add(690,520);
+  return{kind:'loop',ctrl:P,loopStart:[400,250],loopEnd:e,stand:[520,372],seed:11};
+}
+const DEFS={bridge:defBridge,loop:defLoop};
+const VLOOP=200; // Mindesttempo oben im Looping (Pixel pro Sekunde)
 
 function crPoint(P0,P1,P2,P3,u){
   const d=(p,q)=>Math.max(1e-4,Math.sqrt(Math.hypot(q[0]-p[0],q[1]-p[1])));
@@ -301,8 +342,8 @@ function analyze(pts){
   for(let i=0;i<N;i++){let s=0;for(let d=-3;d<=3;d++)s+=kr[(i+d+N)%N];k[i]=s/7}
   return{pts,N,L,step,ang,nx,ny,k};
 }
-function buildTrack(){
-  const raw=[],n=CTRL.length;
+function buildTrack(def){
+  const CTRL=def.ctrl,raw=[],n=CTRL.length;
   for(let i=0;i<n;i++){const P0=CTRL[(i-1+n)%n],P1=CTRL[i],P2=CTRL[(i+1)%n],P3=CTRL[(i+2)%n];
     for(let j=0;j<20;j++){const p=crPoint(P0,P1,P2,P3,j/20);raw.push({x:p[0],y:p[1]})}}
   let c=resample(raw,2);c=smooth(c,45);c=resample(c,2);
@@ -311,16 +352,37 @@ function buildTrack(){
     const r=center.pts.map((p,i)=>({x:p.x+off*center.nx[i],y:p.y+off*center.ny[i],c:i}));
     return analyze(resample(r,2,center.N));
   });
-  // Brücke: Gerade, die nach links läuft und nahe am Kreuzungspunkt ist
-  const isB=new Uint8Array(center.N),hb=new Float32Array(center.N);
-  for(let i=0;i<center.N;i++){const p=center.pts[i],d=Math.hypot(p.x-CROSS.x,p.y-CROSS.y);
-    if(d<185&&Math.cos(center.ang[i])<0){isB[i]=1;hb[i]=clamp((185-d)/85,0,1)}}
-  let b0=0;for(let i=0;i<center.N;i++){if(isB[i]&&!isB[(i-1+center.N)%center.N]){b0=i;break}}
-  let bn=0;while(isB[(b0+bn)%center.N]&&bn<center.N)bn++;
-  return{center,lanes,isB,hb,b0,bn};
+  const N=center.N,isB=new Uint8Array(N),hb=new Float32Array(N),lh=new Float32Array(N),gm=new Float32Array(N).fill(1);
+  let b0=0,bn=0,loop=null;
+  if(def.kind==='bridge'){
+    // Brücke: Gerade, die nach links läuft und nahe am Kreuzungspunkt ist
+    const X=def.cross;
+    for(let i=0;i<N;i++){const p=center.pts[i],d=Math.hypot(p.x-X.x,p.y-X.y);
+      if(d<185&&Math.cos(center.ang[i])<0){isB[i]=1;hb[i]=clamp((185-d)/85,0,1)}}
+    for(let i=0;i<N;i++){if(isB[i]&&!isB[(i-1+N)%N]){b0=i;break}}
+    while(isB[(b0+bn)%N]&&bn<N)bn++;
+  }else{
+    const near=(q)=>{let bi=0,bd=1e9;for(let i=0;i<N;i++){const d=Math.hypot(center.pts[i].x-q[0],center.pts[i].y-q[1]);if(d<bd){bd=d;bi=i}}return bi};
+    const i0=near(def.loopStart),i1=near(def.loopEnd),len=i1-i0;
+    let apex=i0;for(let i=i0;i<=i1;i++)if(center.pts[i].y<center.pts[apex].y)apex=i;
+    for(let i=i0-6;i<=i1+6;i++)gm[i]=5;                       // im Looping drückt die Fliehkraft das Auto in die Spur
+    for(let i=i0;i<=i1;i++){lh[i]=Math.sin(Math.PI*Math.pow((i-i0)/len,2.2))}  // gedachte Höhe: 0 unten, 1 ganz oben
+    // Kreuzungsstelle suchen: erster Durchgang gegen zweiten Durchgang
+    let bj=i1,bd=1e9;
+    for(let i=i0;i<i0+len*0.5;i+=2)for(let j=i0+Math.floor(len*0.55);j<=i1;j+=2){
+      const d=Math.hypot(center.pts[i].x-center.pts[j].x,center.pts[i].y-center.pts[j].y);if(d<bd){bd=d;bj=j}}
+    const HW=32;b0=bj-HW;bn=2*HW+1;
+    for(let k=-HW;k<=HW;k++){const i=bj+k;isB[i]=1;hb[i]=clamp((HW-Math.abs(k))/14,0,1)}
+    loop={i0,i1,apex,g0:apex-5,g1:apex+5};
+  }
+  // Wo liegt ein Mittellinien-Punkt auf jeder Spur (in Pixeln entlang der Spur)?
+  for(const l of lanes){const m=new Float32Array(N).fill(-1);
+    for(let j=0;j<l.N;j++){const c=l.pts[j].c;if(m[c]<0)m[c]=j*l.step}
+    for(let c=1;c<N;c++)if(m[c]<0)m[c]=m[c-1];
+    l.cToS=m}
+  return{center,lanes,isB,hb,lh,gm,b0,bn,loop,def};
 }
-const T=buildTrack();
-const C=T.center;
+let T,C,decor;
 
 /* ================= Physik ================= */
 const PH={A:1000,drag:1000/700,brake:650};
@@ -335,15 +397,19 @@ function lanePos(lane,s){
 }
 function buildProfile(lane,G){
   const N=lane.N,v=new Float32Array(N);
-  for(let i=0;i<N;i++){const kk=Math.max(Math.abs(lane.k[i]),1e-6);v[i]=Math.min(VMAX,Math.sqrt(G/kk))}
+  for(let i=0;i<N;i++){const kk=Math.max(Math.abs(lane.k[i]),1e-6);v[i]=Math.min(VMAX,Math.sqrt(G*T.gm[lane.pts[i].c]/kk))}
   const D=PH.brake*0.85;
   for(let pass=0;pass<3;pass++)for(let i=N-1;i>=0;i--){const nv=v[(i+1)%N],lim=Math.sqrt(nv*nv+2*D*lane.step);if(v[i]>lim)v[i]=lim}
+  if(T.loop){for(let i=0;i<N;i++){const c=lane.pts[i].c;if(c>=T.loop.i0-4&&c<=T.loop.i1)v[i]=Math.min(VMAX,Math.max(v[i],VLOOP*1.35))}}
   return v;
 }
 
 /* ================= Spielzustand ================= */
 const settings={mode:store.get('mode','cpu'),laps:store.get('laps',5),diff:store.get('diff',0),
-  names:[store.get('n1','Lukas'),store.get('n2','Spieler 2')]};
+  names:[store.get('n1','Lukas'),store.get('n2','Spieler 2')],track:store.get('track','bridge')};
+if(!DEFS[settings.track])settings.track='bridge';
+function loadTrack(id){settings.track=id;store.set('track',id);const def=DEFS[id]();T=buildTrack(def);C=T.center;decor=makeDecor(def)}
+loadTrack(settings.track);
 let state='menu';        // menu | countdown | race | finishing | results | paused
 let prevState='race';
 let raceTime=0,cdT=0,cdGo=3.2,cdLit=0,finT=0,winner=null;
@@ -358,7 +424,7 @@ function setupCars(demo){
   const m=demo?'demo':settings.mode;
   grip=demo?GRIP[1]:GRIP[settings.diff];
   cars.forEach((c,i)=>{
-    c.s=4;c.v=0;c.throttle=0;c.slip=0;c.state='run';c.laps=0;c.lapStart=0;c.last=null;c.best=null;c.offs=0;c.done=false;
+    c.lane=T.lanes[i];c.s=4;c.v=0;c.throttle=0;c.slip=0;c.state='run';c.laps=0;c.lapStart=0;c.last=null;c.best=null;c.offs=0;c.done=false;
     c.finishTime=null;c.off=null;c.blink=0;c.jit=1;
     c.active=!(m==='train'&&i===1);
     c.ai=m==='demo'||(m==='cpu'&&i===1);
@@ -376,17 +442,20 @@ function aiThrottle(c){
   return clamp(tEq+(target-c.v)/14,0,1);
 }
 
-function deslot(c,lp){
+function deslot(c,lp,why){
   c.state='off';c.offs++;
   const sp=Math.sign(lp.k)||1;
-  c.off={x:lp.x,y:lp.y,vx:Math.cos(lp.ang)*c.v,vy:Math.sin(lp.ang)*c.v,ang:lp.ang,spin:sp*(5+c.v/70),t:0,s:c.s};
+  // Wer im Looping rausfliegt, wird vor dem Looping wieder eingesetzt und kann neu Anlauf nehmen
+  const inLoop=T.loop&&lp.c>=T.loop.i0-4&&lp.c<=T.loop.i1;
+  c.off={x:lp.x,y:lp.y,vx:Math.cos(lp.ang)*c.v,vy:Math.sin(lp.ang)*c.v,ang:lp.ang,spin:sp*(5+c.v/70),t:0,s:c.s,
+    reset:inLoop?Math.max(0,c.lane.cToS[T.loop.i0]-100):null};
   c.v=0;
   if(state!=='menu'){
     Snd.crash();
-    floaters.push({x:lp.x,y:lp.y-30,text:'Raus!',color:c.color,t:0});
+    floaters.push({x:lp.x,y:lp.y-30,text:why==='loop'?'Zu langsam!':'Raus!',color:c.color,t:0});
   }
 }
-function respawn(c){c.state='run';c.v=0;c.off=null;c.blink=1.1}
+function respawn(c){c.state='run';c.v=0;if(c.off&&c.off.reset!=null)c.s=c.off.reset;c.off=null;c.blink=1.1}
 
 function onLap(c){
   if(state!=='race')return;
@@ -425,7 +494,9 @@ function stepCar(c,dt){
   c.s+=c.v*dt;
   if(c.s>=c.lane.L){c.s-=c.lane.L;onLap(c)}
   const lp=lanePos(c.lane,c.s);
-  c.slip=c.v*c.v*Math.abs(lp.k)/grip;
+  c.slip=c.v*c.v*Math.abs(lp.k)/(grip*T.gm[lp.c]);
+  // Oben im Looping muss das Auto schnell genug sein, sonst fällt es runter
+  if(T.loop&&lp.c>=T.loop.g0&&lp.c<=T.loop.g1&&c.v<VLOOP&&!c.done){deslot(c,lp,'loop');return}
   if(c.slip>1&&!c.done)deslot(c,lp);
 }
 
@@ -519,7 +590,7 @@ function drawTrackPart(c,i0,count,close){
 function drawCurbs(c){
   const thr=1/240;
   for(let i=0;i<C.N;i++){
-    const k=C.k[i];if(Math.abs(k)<thr||T.isB[i])continue;
+    const k=C.k[i];if(Math.abs(k)<thr||T.isB[i]||T.lh[i]>0)continue;
     const j=(i+1)%C.N,side=-Math.sign(k),r0=HALF+1,r1=HALF+9;
     const a=C.pts[i],b=C.pts[j];
     c.fillStyle=Math.floor(i*C.step/11)%2?'#f3efe6':'#d8262c';
@@ -529,11 +600,24 @@ function drawCurbs(c){
     c.closePath();c.fill();
   }
 }
+function loopShadow(c){
+  const L=T.loop;c.save();c.lineJoin='round';c.lineCap='round';c.beginPath();
+  for(let i=L.i0;i<=L.i1;i++){const p=C.pts[i],h=T.lh[i],x=p.x+h*12,y=p.y+h*16;i===L.i0?c.moveTo(x,y):c.lineTo(x,y)}
+  c.strokeStyle='rgba(0,0,0,.22)';c.lineWidth=2*HALF+4;c.stroke();c.restore();
+}
+function loopRails(c,i0,count){
+  c.save();c.lineCap='butt';c.lineJoin='round';
+  for(const sd of[-1,1]){
+    offPath(c,i0,count,sd*(HALF+2.5),false);c.strokeStyle='#ff7a1a';c.lineWidth=5;c.stroke();
+    offPath(c,i0,count,sd*(HALF+0.5),false);c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=1.2;c.stroke();
+  }
+  c.restore();
+}
 function minDistToTrack(x,y){let m=1e9;for(let i=0;i<C.N;i+=3){const p=C.pts[i],d=Math.hypot(p.x-x,p.y-y);if(d<m)m=d}return m}
 
-const decor=(()=>{
-  const r=rng(7),trees=[],flowers=[];
-  const stand={x:500,y:548,w:236,h:46};
+function makeDecor(def){
+  const r=rng(def.seed),trees=[],flowers=[];
+  const stand={x:def.stand[0],y:def.stand[1],w:236,h:46};
   const inStand=(x,y,pad)=>x>stand.x-stand.w/2-pad&&x<stand.x+stand.w/2+pad&&y>stand.y-stand.h/2-pad&&y<stand.y+stand.h/2+pad;
   let tries=0;
   while(trees.length<34&&tries<4000){tries++;
@@ -547,7 +631,7 @@ const decor=(()=>{
     flowers.push({x,y,c:['#ffd84a','#ffffff','#ff8fb1','#b9e3ff'][Math.floor(r()*4)]})}
   const fans=[];for(let row=0;row<3;row++)for(let k=0;k<19;k++)fans.push({x:-104+k*11.5+(row%2)*5,y:-6+row*10,c:['#e5332c','#2a6ce0','#ffc52a','#f5f1e6','#7bd389','#ff8fb1'][Math.floor(r()*6)]});
   return{trees,flowers,stand,fans};
-})();
+}
 
 function renderLayers(){
   const mk=()=>{const c=document.createElement('canvas');c.width=cv.width;c.height=cv.height;return c};
@@ -580,7 +664,9 @@ function renderLayers(){
     b.fillStyle='rgba(255,255,255,.12)';b.beginPath();b.arc(t.x-t.r*.38,t.y-t.r*.4,t.r*.25,0,TAU);b.fill();
   }
   // Bahn
+  if(T.loop)loopShadow(b);
   drawTrackPart(b,0,C.N,true);
+  if(T.loop)loopRails(b,T.loop.i0,T.loop.i1-T.loop.i0);
   // Start/Ziel
   const p0=C.pts[0];b.save();b.translate(p0.x,p0.y);b.rotate(C.ang[0]);
   const sq=HALF/4;for(let col=0;col<2;col++)for(let row=0;row<8;row++){b.fillStyle=(row+col)%2?'#111':'#f5f1e6';b.fillRect(-sq+col*sq,-HALF+row*sq,sq,sq)}
@@ -601,7 +687,8 @@ function renderLayers(){
   drawTrackPart(bb,T.b0,T.bn-1,false);
   // Leitplanken
   let r0=-1,cnt=0;for(let j=0;j<T.bn;j++){const i=(T.b0+j)%C.N;if(T.hb[i]>0.3){if(r0<0)r0=i;cnt++}}
-  if(r0>=0){for(const sd of[-1,1]){offPath(bb,r0,cnt-1,sd*(HALF+4),false);bb.lineCap='round';bb.strokeStyle='#eef1f4';bb.lineWidth=3.2;bb.stroke();
+  if(T.loop)loopRails(bb,T.b0,T.bn-1);
+  else if(r0>=0){for(const sd of[-1,1]){offPath(bb,r0,cnt-1,sd*(HALF+4),false);bb.lineCap='round';bb.strokeStyle='#eef1f4';bb.lineWidth=3.2;bb.stroke();
     bb.strokeStyle='rgba(0,0,0,.35)';bb.lineWidth=1;offPath(bb,r0,cnt-1,sd*(HALF+5.8),false);bb.stroke()}}
 }
 
@@ -615,8 +702,8 @@ function resize(){
 
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);
   c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath()}
-function drawCar(c,x,y,ang,color,num,lift){
-  c.save();c.translate(x,y);c.rotate(ang);
+function drawCar(c,x,y,ang,color,num,lift,sc){
+  c.save();c.translate(x,y);c.rotate(ang);if(sc)c.scale(sc,sc);
   const L=lift||0;
   c.fillStyle='rgba(0,0,0,.35)';rr(c,-17+3+L*6,-8+3+L*6,35,16,6);c.fill();
   c.fillStyle='#0d0d0f';
@@ -636,14 +723,14 @@ function carScreen(c){
   if(c.state==='off')return{x:c.off.x,y:c.off.y,ang:c.off.ang,up:2};
   const lp=lanePos(c.lane,c.s);let a=lp.ang;
   if(c.slip>0.72)a+=Math.sign(lp.k)*Math.min(0.38,(c.slip-0.72)*1.3);
-  return{x:lp.x,y:lp.y,ang:a,up:T.isB[lp.c]?1:0,lp};
+  return{x:lp.x,y:lp.y,ang:a,up:T.isB[lp.c]?1:0,lh:T.lh[lp.c],lp};
 }
 function render(){
   if(!layerBase)return;
   ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(layerBase,0,0);
   ctx.setTransform(scale*dpr,0,0,scale*dpr,ox*dpr,oy*dpr);
   const list=cars.filter(c=>c.active).map(c=>({c,p:carScreen(c)}));
-  const draw=it=>{const{c,p}=it;if(c.blink>0&&Math.floor(c.blink*10)%2)return;drawCar(ctx,p.x,p.y,p.ang,c.color,c.num,p.up===1?0.5:p.up===2?1:0)};
+  const draw=it=>{const{c,p}=it;if(c.blink>0&&Math.floor(c.blink*10)%2)return;drawCar(ctx,p.x,p.y,p.ang,c.color,c.num,Math.max(p.up===1?0.5:p.up===2?1:0,(p.lh||0)*1.6),1+0.5*(p.lh||0))};
   list.filter(it=>it.p.up===0).forEach(draw);
   for(const pt of particles){ctx.fillStyle=`rgba(225,225,225,${0.4*(1-pt.t/pt.life)})`;ctx.beginPath();ctx.arc(pt.x,pt.y,pt.r*(1+pt.t*2),0,TAU);ctx.fill()}
   ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(layerBridge,0,0);
@@ -688,14 +775,19 @@ document.addEventListener('dblclick',e=>e.preventDefault());
 function segInit(id,key,parse){
   const el=$(id);const btns=[...el.querySelectorAll('button')];
   const paint=()=>btns.forEach(b=>b.setAttribute('aria-pressed',String(parse(b.dataset.v)===settings[key])));
-  btns.forEach(b=>b.addEventListener('click',()=>{settings[key]=parse(b.dataset.v);store.set(key,settings[key]);paint();menuPaint()}));
+  btns.forEach(b=>b.addEventListener('click',()=>{settings[key]=parse(b.dataset.v);store.set(key,settings[key]);paint();if(key==='track')switchTrack();menuPaint()}));
   paint();
 }
+const TRACK_TXT={bridge:'Eine Acht mit Brücke in der Mitte, dazu Kurven und eine Schikane.',
+  loop:'Ein Oval mit Schikane und einem Looping. Im Looping musst du schnell genug sein, sonst fällt das Auto oben runter. Zu schnell darf es aber auch nicht sein.'};
+function switchTrack(){loadTrack(settings.track);setupCars(true);renderLayers();paintCtrlStatic()}
+segInit('#segTrack','track',v=>v);
 segInit('#segMode','mode',v=>v);segInit('#segLaps','laps',Number);segInit('#segDiff','diff',Number);
 const in1=$('#inName1'),in2=$('#inName2');in1.value=settings.names[0];in2.value=settings.names[1];
 in1.addEventListener('input',()=>{settings.names[0]=in1.value;store.set('n1',in1.value)});
 in2.addEventListener('input',()=>{settings.names[1]=in2.value;store.set('n2',in2.value)});
 function menuPaint(){
+  $('#trackDesc').textContent=TRACK_TXT[settings.track]||'';
   $('#lblName2').style.visibility=settings.mode==='duo'?'visible':'hidden';
   $('#fieldLaps').style.opacity=settings.mode==='train'?0.4:1;
 }
@@ -808,6 +900,6 @@ resize();
 setupCars(true);paintCtrlStatic();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>renderLayers());
 requestAnimationFrame(frame);
-window.__rb={T,cars,settings,get state(){return state},sim(sec){for(let t=0;t<sec;t+=1/60)update(1/60);render()},startRace,input};
+window.__rb={get T(){return T},switchTrack,cars,settings,get state(){return state},sim(sec){for(let t=0;t<sec;t+=1/60)update(1/60);render()},startRace,input};
 })();
 </script>
