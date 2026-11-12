@@ -9,8 +9,15 @@
 // Der Code wird als Text eingefügt oder als Datei geladen. Projekte mit dieser Erweiterung laufen nur in TurboWarp,
 // nicht auf scratch.mit.edu.
 //
-// Alles läuft im Browser. Es werden keine Kamerabilder verschickt. Nur die fertigen Erkennungsmodelle
-// (MobileNet oder PoseNet) werden einmal aus dem Internet geladen.
+// Alles läuft im Browser. Es werden keine Kamerabilder verschickt. Zur Laufzeit lädt die Erweiterung Programme
+// (TensorFlow.js, MobileNet, PoseNet von cdn.jsdelivr.net) und die fertigen Erkennungsmodelle (von Google/Kaggle).
+// Dabei sehen diese Anbieter technische Daten wie die IP-Adresse.
+//
+// Lizenzen der geladenen Teile: TensorFlow.js, MobileNet- und PoseNet-Programmcode sowie die Modelle stehen unter
+// Apache-2.0 (© Google LLC). Das MobileNet-Modell wurde ursprünglich mit ImageNet trainiert, dessen Bedingungen nur
+// nicht-kommerzielle Forschung und Bildung erlauben. Alle Angaben mit Quellen: ki-werkstatt.html#info
+// (https://makingvs.github.io/lukas-rennbahn/ki-werkstatt.html#info).
+// Der Quelltext dieser Erweiterung ist (noch) nicht unter einer Open-Source-Lizenz freigegeben.
 
 (function (Scratch) {
   'use strict';

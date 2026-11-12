@@ -301,6 +301,21 @@
   .btn.hold,.btn.hold:hover:not(:disabled){background:var(--c);color:var(--cf,#fff)}
   .btn.hold:hover:not(:disabled){filter:brightness(.93)}
   .btn.hold.on,.btn.hold.on:hover:not(:disabled){filter:none}
+  /* Hinweis auf der Startseite und Info-Dialog mit Lizenzen */
+  .notice{margin:30px auto 0;max-width:760px;background:var(--brand-l);border-radius:14px;padding:14px 18px;box-shadow:inset 0 0 0 1px #d9e9ae;display:grid;gap:6px;text-align:left}
+  .notice b{font-size:15px}
+  .notice p{font-size:14px;color:var(--label)}
+  .notice a,.notice .linkbtn{color:var(--blue-d);font-weight:700}
+  .notice .linkbtn{display:inline;min-height:0;padding:0;text-decoration:underline}
+  .sheet a{color:var(--blue-d);font-weight:700}
+  .lic{display:grid;gap:10px}
+  .lic .it{border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:grid;gap:4px;background:#fcfdfa}
+  .lic .hd2{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+  .lic .t{font-weight:700;font-size:15px}
+  .lic .bd{font-size:12px;font-weight:700;background:var(--brand-l);color:var(--ink);border-radius:99px;padding:2px 10px;box-shadow:inset 0 0 0 1px #cfe29a}
+  .lic .d{font-size:14px;color:var(--label);line-height:1.45}
+  .lic .ln{font-size:13px;display:flex;flex-wrap:wrap;gap:4px 14px}
+  .sheet h3.grp{margin-top:10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -324,7 +339,7 @@
         <path d="M22 82l34-30 22 20 18-14 42 28v4a5 5 0 0 1-5 5H27a5 5 0 0 1-5-5z" fill="#99c328"/>
         <path d="M96 58l42 28v4a5 5 0 0 1-5 5H112z" fill="#7ea51b"/>
       </svg></div>
-      <div class="tx"><h2>Bildprojekt</h2><p>Trainiere das Modell mit Bildern aus deiner Kamera oder aus Dateien.</p><span class="go">Starten →</span></div>
+      <div class="tx"><h2>Bildprojekt</h2><p>Zeig der KI Bilder aus deiner Kamera oder aus Dateien und bring ihr bei, sie zu unterscheiden.</p><span class="go">Starten →</span></div>
     </button>
     <button class="type pose" id="pickPose" type="button">
       <div class="pic"><svg viewBox="0 0 160 110" aria-hidden="true">
@@ -332,15 +347,18 @@
         <circle cx="80" cy="24" r="11" fill="#fff" stroke="#f29d35" stroke-width="4"/>
         <g fill="#fff" stroke="#e31274" stroke-width="3"><circle cx="80" cy="44" r="5"/><circle cx="60" cy="34" r="5"/><circle cx="46" cy="20" r="5"/><circle cx="100" cy="34" r="5"/><circle cx="114" cy="20" r="5"/><circle cx="80" cy="68" r="5"/><circle cx="68" cy="88" r="5"/><circle cx="62" cy="104" r="5"/><circle cx="92" cy="88" r="5"/><circle cx="98" cy="104" r="5"/></g>
       </svg></div>
-      <div class="tx"><h2>Posenprojekt</h2><p>Trainiere das Modell mit Körperhaltungen: Arme, Beine und Kopf.</p><span class="go">Starten →</span></div>
+      <div class="tx"><h2>Posenprojekt</h2><p>Bring der KI bei, Körperhaltungen zu erkennen: Arme, Beine und Kopf.</p><span class="go">Starten →</span></div>
     </button>
     <button class="type audio" type="button" disabled>
       <div class="pic"><svg viewBox="0 0 160 110" aria-hidden="true"><g fill="#9aa0a6"><rect x="30" y="44" width="10" height="22" rx="5"/><rect x="48" y="30" width="10" height="50" rx="5"/><rect x="66" y="16" width="10" height="78" rx="5"/><rect x="84" y="36" width="10" height="38" rx="5"/><rect x="102" y="24" width="10" height="62" rx="5"/><rect x="120" y="46" width="10" height="18" rx="5"/></g></svg></div>
       <div class="tx"><h2>Audioprojekt</h2><p>Gibt es in dieser Werkstatt noch nicht. Das Original kann es.</p></div>
     </button>
   </div>
-  <p class="legal">Du möchtest deine KI in Scratch nutzen? <a href="scratch.html">So geht's mit Scratch (TurboWarp)</a></p>
-  <p class="legal" style="margin-top:10px">MINT2Go · MINT erleben. Nachempfunden dem Werkzeug „Teachable Machine“ von Google, aber kein Google-Angebot. Alles läuft auf deinem Gerät, es werden keine Bilder verschickt.</p>
+  <div class="notice">
+    <b>Wichtiger Hinweis</b>
+    <p>Die KI-Werkstatt ist ein Bildungsprojekt im Design von MINT2Go. Sie ist <b>nicht mit Teachable Machine oder Google verbunden</b> und wurde <b>nur zu Bildungszwecken</b> gebaut. Der Aufbau ist dem Werkzeug „Teachable Machine“ nachempfunden. Alles läuft auf deinem Gerät, es werden keine Bilder verschickt.</p>
+    <p><button class="linkbtn" id="btnInfoStart" type="button">Info, Lizenzen und Datenschutz</button> · <a href="scratch.html">So geht's mit Scratch (TurboWarp)</a></p>
+  </div>
 </main>
 
 <!-- ============ Projekt ============ -->
@@ -353,6 +371,7 @@
       <div class="dd" id="mainMenu" hidden>
         <button type="button" data-a="new">Neues Projekt</button>
         <button type="button" data-a="help">Hilfe und Tipps</button>
+        <button type="button" data-a="info">Info, Lizenzen und Datenschutz</button>
       </div>
     </div>
     <ol class="stepper" id="stepper" aria-label="Fortschritt">
@@ -406,7 +425,7 @@
           <div class="think"><span class="spin"></span><span>Die KI übt<span class="dots"><i></i><i></i><i></i></span></span></div>
           <div class="prog" style="margin-top:10px"><i id="progBar"></i></div>
           <p class="hint" id="progTxt" style="margin-top:6px"></p>
-          <button class="btn stop" id="btnStop" type="button" style="margin-top:8px;width:100%">Training beenden</button>
+          <button class="btn stop" id="btnStop" type="button" style="margin-top:8px;width:100%">Üben stoppen</button>
         </div>
         <div class="done" id="doneBox" hidden>
           <div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="26" fill="none" stroke="#dfeab9" stroke-width="8"/><circle id="ringArc" cx="32" cy="32" r="26" fill="none" stroke="#5d8c10" stroke-width="8" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="163.4"/></svg><b id="ringTxt">0 %</b></div>
@@ -422,7 +441,7 @@
             <small class="hint">So viele Beispiele schaut sich die KI auf einmal an. Diese Zahl musst du meistens nicht ändern.</small>
             <label>Lernrate:<input type="number" id="advLr" min="0.0001" max="0.1" step="0.0001" value="0.001"></label>
             <small class="hint">Wie große Schritte die KI beim Lernen macht. Ändere sie nur vorsichtig.</small>
-            <button class="linkbtn" id="advReset" type="button">Auf Standardwerte zurücksetzen</button>
+            <button class="linkbtn" id="advReset" type="button">Standardwerte wiederherstellen</button>
             <button class="linkbtn" id="btnDetails" type="button" disabled>Details ansehen</button>
           </div>
         </details>
@@ -435,7 +454,7 @@
         <h2>Vorschau</h2>
         <div class="empty" id="prevWait">
           <svg viewBox="0 0 120 80" aria-hidden="true"><rect x="6" y="6" width="108" height="68" rx="12" fill="none" stroke="#bdc1c6" stroke-width="3" stroke-dasharray="9 8"/><path d="M52 26l26 14-26 14z" fill="#bdc1c6"/></svg>
-          <p>Du musst links ein Modell trainieren, um es hier als Vorschau ansehen zu können.</p>
+          <p>Trainiere zuerst links eine KI. Danach kannst du sie hier ausprobieren.</p>
         </div>
         <div id="prevBody" hidden style="display:grid;gap:14px">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -608,7 +627,7 @@
   function camMessage(e){
     var n = e && e.name;
     if (!window.isSecureContext) return 'Diese Seite muss über https geöffnet werden, sonst erlaubt der Browser die Kamera nicht.';
-    if (n === 'NotAllowedError' || n === 'SecurityError') return 'Beim Starten deiner Webcam ist ein Fehler aufgetreten. Achte darauf, dass die Kamera erlaubt ist: Einstellungen → Safari → Kamera → „Fragen“ oder „Erlauben“. Lade die Seite danach neu. Oder lade stattdessen Bilder hoch.';
+    if (n === 'NotAllowedError' || n === 'SecurityError') return 'Die Kamera ist nicht erlaubt. Öffne am iPad Einstellungen → Safari → Kamera und wähle „Fragen“ oder „Erlauben“. Lade die Seite danach neu. Du kannst auch Bilder hochladen.';
     if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'Keine Kamera gefunden. Probiere „Kamera wechseln“ oder lade stattdessen Bilder hoch.';
     if (n === 'NotReadableError') return 'Die Kamera wird gerade von einer anderen App benutzt. Schließe die andere App und lade die Seite neu.';
     return 'Die Kamera konnte nicht gestartet werden.';
@@ -722,8 +741,8 @@
   /* ================= Klassen ================= */
   function labelFor(c){
     var n = c.ex.length;
-    if (!n) return S.type === 'pose' ? 'Beispiele für Posen hinzufügen:' : 'Bildbeispiele hinzufügen:';
-    return n + (S.type === 'pose' ? (n === 1 ? ' Beispiel für Posen' : ' Beispiele für Posen') : (n === 1 ? ' Bild-Beispiel' : ' Bild-Beispiele'));
+    if (!n) return S.type === 'pose' ? 'Füge Posen für diese Klasse hinzu:' : 'Füge Bilder für diese Klasse hinzu:';
+    return n + (S.type === 'pose' ? (n === 1 ? ' Pose' : ' Posen') : (n === 1 ? ' Bild' : ' Bilder'));
   }
   function addClass(){
     var p = PAL[S.classes.length % PAL.length];
@@ -745,7 +764,7 @@
         '<div class="mwrap"><button class="iconbtn dots" type="button" aria-label="Menü der Klasse" aria-haspopup="true">' + icon('dots') + '</button>' +
           '<div class="dd" hidden>' +
             '<button type="button" data-a="toggle">Klasse deaktivieren</button>' +
-            '<button type="button" data-a="clear">Alle Beispiele entfernen</button>' +
+            '<button type="button" data-a="clear">Alle Beispiele löschen</button>' +
             '<button type="button" data-a="del">Klasse löschen</button></div></div>' +
       '</div>' +
       '<p class="lab"></p>' +
@@ -903,7 +922,7 @@
   window.addEventListener('pointerup', releaseAny, true);
   window.addEventListener('pointercancel', releaseAny, true);
 
-  function holdText(){ return S.rs && S.rs.durOn ? 'Aufnehmen' : 'Zum Aufnehmen halten'; }
+  function holdText(){ return S.rs && S.rs.durOn ? 'Aufnehmen' : 'Gedrückt halten: aufnehmen'; }
   function updateRecUI(){
     var c = byId(S.openId); if (!c || !c.ui.hold) return;
     var ui = c.ui, R = S.rec, mine = !!(R && R.cid === c.id), now = performance.now();
@@ -1056,8 +1075,8 @@
     $('#doneBox').hidden = !S.trained || S.manual;
     if (S.manual){ renderStepper(); return; }
     if (S.rounds){ refreshRounds(); renderStepper(); return; }
-    if (S.training){ b.disabled = true; b.textContent = 'Training wird ausgeführt …'; hint.textContent = ''; renderStepper(); return; }
-    if (S.trained){ b.disabled = true; b.textContent = 'Modell ist trainiert'; hint.textContent = ''; renderStepper(); return; }
+    if (S.training){ b.disabled = true; b.textContent = 'Die KI übt …'; hint.textContent = ''; renderStepper(); return; }
+    if (S.trained){ b.disabled = true; b.textContent = 'Modell ist fertig geübt'; hint.textContent = ''; renderStepper(); return; }
     b.textContent = 'Modell trainieren'; b.disabled = !!prob; hint.textContent = prob; renderStepper();
   }
   function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
@@ -1126,7 +1145,7 @@
     $('#prevWait').hidden = !!ok; $('#prevBody').hidden = !ok;
     $('#btnDetails').disabled = !S.head;
     $('#teachBox').hidden = !S.manual;
-    setText($('#prevWait p'), S.rounds ? 'Tippe links auf „Eine Runde üben“. Dann siehst du hier, wie die KI rät.' : 'Du musst links ein Modell trainieren, um es hier als Vorschau ansehen zu können.');
+    setText($('#prevWait p'), S.rounds ? 'Tippe links auf „Eine Runde üben“. Dann siehst du hier, wie die KI rät.' : 'Trainiere zuerst links eine KI. Danach kannst du sie hier ausprobieren.');
     if (!ok) return;
     if (S.manual) S.classOrder = active().map(function(c){ return c.id; });
     buildBars(true);
@@ -1523,8 +1542,74 @@
       '<li><b>Anderer Hintergrund:</b> Teste, ob die KI auch klappt, wenn der Hintergrund oder das Licht anders ist.</li>' +
       '<li><b>Verwirren:</b> Trainiere „rechte Hand hoch“ und prüfe, was bei der linken Hand passiert.</li>' +
       '<li><b>Mehr Übung:</b> Erhöhe unter „Erweitert“ die Epochen.</li></ul>' +
-      '<p class="note">Die KI-Werkstatt ist dem Werkzeug „Teachable Machine“ von Google nachempfunden, aber nicht von Google. Die Bilder bleiben auf deinem Gerät. Beim ersten Start wird nur das fertige Erkennungsmodell aus dem Internet geladen.</p>' +
+      '<p class="note">Die KI-Werkstatt ist dem Werkzeug „Teachable Machine“ nachempfunden, aber nicht mit Google verbunden und nur zu Bildungszwecken gebaut. Die Bilder bleiben auf deinem Gerät. Beim Start eines Projekts lädt die Seite Programme und ein fertiges Erkennungsmodell aus dem Internet. Mehr dazu unter „Info, Lizenzen und Datenschutz“ im Menü.</p>' +
       '<button class="btn" type="button" data-close>Verstanden</button>');
+  }
+
+  /* ================= Info, Lizenzen und Datenschutz ================= */
+  // Stand der Prüfung: 12. November 2026. Quellen sind jeweils verlinkt, maßgeblich sind die Texte der Anbieter.
+  var INFO_GROUPS = [
+    { g: 'Programme (werden beim Start von cdn.jsdelivr.net geladen)', items: [
+      { t: 'TensorFlow.js 4.22.0', b: 'Apache-2.0', d: 'Rechnet die KI im Browser. © Google LLC. Enthalten sind Hilfsbibliotheken, unter anderem seedrandom (MIT) und long.js (Apache-2.0). Das Teilpaket tfjs-layers steht unter Apache-2.0 und MIT.',
+        l: [['Lizenztext', 'https://github.com/tensorflow/tfjs/blob/master/LICENSE']] },
+      { t: 'MobileNet, Programmcode 2.1.1', b: 'Apache-2.0', d: 'Lädt das Bilderkennungs-Netz und liefert die Bildmerkmale. © Google LLC.',
+        l: [['Lizenztext', 'https://github.com/tensorflow/tfjs-models/blob/master/LICENSE']] },
+      { t: 'PoseNet, Programmcode 2.2.2', b: 'Apache-2.0', d: 'Erkennt Körperpunkte (Kopf, Schultern, Arme, Beine). © Google LLC. Der Hersteller hat dieses Paket als veraltet gekennzeichnet.',
+        l: [['Lizenztext', 'https://github.com/tensorflow/tfjs-models/blob/master/LICENSE']] },
+      { t: 'Apache-Lizenz 2.0', b: 'Lizenztext', d: 'Die Programme werden nur zur Laufzeit geladen und nicht von dieser Seite weitergegeben. Die Lizenz erlaubt Nutzung, Änderung und Weitergabe, verlangt den Hinweis auf Urheber und Lizenz (hier gegeben) und schließt jede Gewährleistung aus.',
+        l: [['apache.org', 'https://www.apache.org/licenses/LICENSE-2.0']] }
+    ] },
+    { g: 'Modelle und Trainingsdaten', items: [
+      { t: 'MobileNet-V1-Modell (Faktor 0,25, 224 Pixel, TensorFlow.js)', b: 'Apache-2.0', d: 'Fertig trainiertes Netz von Google (Kaggle, früher TensorFlow Hub). Seine Gewichte wurden ursprünglich mit dem Datensatz ILSVRC-2012 („ImageNet“) trainiert. Es wird beim Start eines Bildprojekts geladen.',
+        l: [['Modellseite mit Lizenzangabe', 'https://www.kaggle.com/models/google/mobilenet-v1/tfJs/025-224-classification/1']] },
+      { t: 'ImageNet (Trainingsdaten des MobileNet-Modells)', b: 'Nutzungsbedingungen', d: 'Der Zugang zur ImageNet-Datenbank ist nach ihren Bedingungen auf nicht-kommerzielle Forschung und Bildung beschränkt. Die KI-Werkstatt dient der Bildung. Wer sie anders oder gewerblich einsetzt, sollte diese Bedingungen prüfen.',
+        l: [['Bedingungen', 'https://www.image-net.org/download.php']] },
+      { t: 'PoseNet-Modell (MobileNetV1, Faktor 0,50, 257 Pixel)', b: 'Apache-2.0', d: 'Fertig trainiertes Netz von Google, geladen von storage.googleapis.com beim Start eines Posenprojekts. Die Quelle macht kaum Angaben zu den Trainingsdaten.',
+        l: [['Repository', 'https://github.com/tensorflow/tfjs-models/tree/master/posenet']] }
+    ] },
+    { g: 'Dienste, die Dateien ausliefern', items: [
+      { t: 'jsDelivr (cdn.jsdelivr.net)', b: 'Nutzungsbedingungen', d: 'Liefert die Programme aus. Betreiber ist Volentio JSD Limited (England und Wales). Die Nutzung ist laut Bedingungen kostenlos, auch gewerblich. Der Dienst erfasst technische Nutzungsdaten (zum Beispiel IP-Adresse, Browser, Zeitpunkt), setzt aber keine Cookies.',
+        l: [['Nutzungsbedingungen', 'https://www.jsdelivr.com/terms/terms-of-use'], ['Datenschutz', 'https://www.jsdelivr.com/terms/privacy-policy']] },
+      { t: 'Google, Kaggle und TensorFlow Hub (tfhub.dev, kaggle.com, storage.googleapis.com)', b: 'Bedingungen der Anbieter', d: 'Liefern die Modelle aus. Beim Abruf sehen die Betreiber technische Daten wie die IP-Adresse. Es werden keine Bilder und keine Eingaben der Kinder übertragen.',
+        l: [['Google Datenschutz', 'https://policies.google.com/privacy'], ['Kaggle Bedingungen', 'https://www.kaggle.com/terms']] },
+      { t: 'GitHub Pages (makingvs.github.io)', b: 'GitHub-Bedingungen', d: 'Stellt diese Seite bereit, die öffentlich erreichbar ist. GitHub sieht beim Aufruf technische Daten wie die IP-Adresse. Die Seite selbst sammelt keine Daten.',
+        l: [['Nutzungsbedingungen', 'https://docs.github.com/en/site-policy/github-terms/github-terms-of-service'], ['Datenschutz', 'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement']] }
+    ] },
+    { g: 'Design, Marken und Quelltext', items: [
+      { t: 'MINT2Go: Logo, Farben, Schriftzug „MINT erleben“', b: 'Rechte bei MINT2Go', d: 'Logo und Erscheinungsbild gehören MINT2Go. Als Schrift wird die auf dem Gerät vorhandene Systemschrift verwendet (zum Beispiel Avenir Next). Es wird keine Schriftdatei ausgeliefert.', l: [] },
+      { t: 'Teachable Machine (Google)', b: 'Marke von Google', d: 'Der Aufbau (Klassen, Training, Vorschau) ist dem Werkzeug „Teachable Machine“ nachempfunden. Es wird kein Programmcode, kein Logo und keine Grafik von dort übernommen. Die KI-Werkstatt ist nicht mit Teachable Machine oder Google verbunden und nur zu Bildungszwecken gebaut.', l: [] },
+      { t: 'Quelltext der KI-Werkstatt und der Scratch-Erweiterung', b: 'Rechte beim Betreiber', d: 'Der selbst geschriebene Quelltext ist (noch) nicht unter einer Open-Source-Lizenz freigegeben.', l: [] }
+    ] },
+    { g: 'Scratch (nur wenn die Erweiterung genutzt wird)', items: [
+      { t: 'TurboWarp (turbowarp.org)', b: 'GPL-3.0', d: 'Open-Source-Mod von Scratch. Die Änderungen von TurboWarp stehen unter GPL-3.0, der ursprüngliche Scratch-Code behält seine Lizenz. Eigene Erweiterungen lädt TurboWarp nur nach einer Rückfrage. Das Modell wird im Browser auf dem Gerät gespeichert.',
+        l: [['Quelltext und Lizenz', 'https://github.com/TurboWarp/scratch-gui'], ['Datenschutz von TurboWarp', 'https://turbowarp.org/privacy.html']] },
+      { t: 'Scratch', b: 'Marke', d: 'Der Name „Scratch“ wird nur zur Beschreibung genannt, ohne Logo. Scratch ist ein Projekt der Scratch Foundation, Name und Logo sind markenrechtlich geschützt. Projekte mit eigenen Erweiterungen lassen sich nicht auf scratch.mit.edu hochladen.',
+        l: [['scratchfoundation.org', 'https://www.scratchfoundation.org/']] }
+    ] }
+  ];
+  function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function openInfo(){
+    var h = '<div class="top"><h2>Info, Lizenzen und Datenschutz</h2><button class="iconbtn" type="button" data-close aria-label="Schließen">' + icon('close') + '</button></div>' +
+      '<p class="note">Stand: 12. November 2026. Die Angaben beruhen auf den verlinkten Quellen. Maßgeblich sind immer die Texte der Anbieter.</p>' +
+      '<h3>Was ist die KI-Werkstatt?</h3>' +
+      '<p>Ein Bildungsprojekt im Design von MINT2Go, in dem Kinder eine kleine KI selbst trainieren. Sie ist <b>nicht mit Teachable Machine oder Google verbunden</b> und wurde <b>nur zu Bildungszwecken</b> gebaut. Sie wird ohne Gewähr bereitgestellt, und die KI kann Fehler machen.</p>' +
+      '<h3>Datenschutz</h3>' +
+      '<ul><li><b>Bleibt auf dem Gerät:</b> Kamerabilder, Beispiele, Klassennamen und trainierte KIs. Die Seite sendet nichts davon ins Internet, speichert nichts im Browser und setzt keine Cookies.</li>' +
+      '<li><b>Wird geladen:</b> Beim Öffnen die Seite und die Logos (GitHub Pages), beim Start eines Projekts die Programme (jsDelivr) und das fertige Erkennungsmodell (Google, Kaggle). Das sind je nach Projektart nur wenige Megabyte.</li>' +
+      '<li><b>Verbindungsdaten:</b> Diese Anbieter sehen beim Abruf technische Daten wie die IP-Adresse, den Browser und die Uhrzeit. Dazu gelten ihre eigenen Datenschutzerklärungen (siehe unten).</li>' +
+      '<li><b>Scratch:</b> Wer das Modell an Scratch (TurboWarp) weitergibt, nutzt TurboWarp mit dessen Datenschutzregeln. Die Erweiterung lädt dieselben Programme und Modelle.</li></ul>';
+    INFO_GROUPS.forEach(function(grp){
+      h += '<h3 class="grp">' + esc(grp.g) + '</h3><div class="lic">';
+      grp.items.forEach(function(it){
+        h += '<div class="it"><div class="hd2"><span class="t">' + esc(it.t) + '</span><span class="bd">' + esc(it.b) + '</span></div><p class="d">' + esc(it.d) + '</p>';
+        if (it.l && it.l.length){ h += '<div class="ln">' + it.l.map(function(x){ return '<a href="' + esc(x[1]) + '" target="_blank" rel="noopener">' + esc(x[0]) + '</a>'; }).join('') + '</div>'; }
+        h += '</div>';
+      });
+      h += '</div>';
+    });
+    h += '<p class="note">Lizenzen und Bedingungen können sich ändern. Wer die Werkstatt weitergeben, selbst hosten oder gewerblich nutzen möchte, sollte die Quellen vorher erneut prüfen.</p>' +
+      '<button class="btn" type="button" data-close>Schließen</button>';
+    openDialog(h);
   }
 
   /* ================= Ablauf ================= */
@@ -1566,12 +1651,14 @@
   }
 
   /* ================= Verdrahtung ================= */
+  $('#btnInfoStart').addEventListener('click', openInfo);
+  if (location.hash === '#info') openInfo();
   $('#pickImage').addEventListener('click', function(){ startProject('image'); });
   $('#pickPose').addEventListener('click', function(){ startProject('pose'); });
   $('#btnMenu').addEventListener('click', function(e){ e.stopPropagation(); var m = $('#mainMenu'), open = m.hidden; closeMenus(); m.hidden = !open; });
   $('#mainMenu').addEventListener('click', function(e){
     var a = e.target.getAttribute && e.target.getAttribute('data-a'); if (!a) return; closeMenus();
-    if (a === 'new') newProject(); else if (a === 'help') openHelp();
+    if (a === 'new') newProject(); else if (a === 'help') openHelp(); else if (a === 'info') openInfo();
   });
   $('#btnAdd').addEventListener('click', addClass);
   $('#btnTrain').addEventListener('click', function(){
