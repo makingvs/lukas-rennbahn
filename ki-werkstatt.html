@@ -195,6 +195,19 @@
   .chip[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
   .note{font-size:13px;color:var(--muted)}
 
+  /* ===== Art des Trainings ===== */
+  .modes{display:grid;gap:8px}
+  .mode{text-align:left;border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;display:grid;gap:2px;transition:border-color .15s,background .15s}
+  .mode b{font-size:15px}
+  .mode span{font-size:12.5px;color:var(--muted);line-height:1.3}
+  .mode:hover{border-color:var(--blue-m)}
+  .mode[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l)}
+  .mode[aria-pressed="true"] b{color:var(--blue-d)}
+  .rstats{background:var(--blue-l);border-radius:10px;padding:12px 14px;display:grid;gap:2px}
+  .rstats .rnum{font-size:26px;font-weight:700;color:var(--blue-d);line-height:1.1}
+  .rstats .t2{font-size:14px;color:var(--label)}
+  .rchart{width:100%;height:auto;aspect-ratio:640/340;background:#f8f9fa;border-radius:8px}
+
   /* ===== Manuelles Training („Du bist die Lehrerin“) ===== */
   .tstats{background:var(--blue-l);border-radius:10px;padding:12px 14px;display:grid;gap:6px}
   .tstats .t1{font-weight:700;color:var(--blue-d)}
@@ -297,9 +310,25 @@
     <section class="col col-train">
       <div class="card">
         <h2>Training</h2>
-        <div class="seg" id="modeSeg" role="group" aria-label="Art des Trainings">
-          <button type="button" id="mAuto" aria-pressed="true">Automatisch</button>
-          <button type="button" id="mManual" aria-pressed="false">Von Hand</button>
+        <div class="modes" role="group" aria-label="Art des Trainings">
+          <button type="button" class="mode" id="mAuto" aria-pressed="true"><b>Automatisch</b><span>Die KI übt alles auf einmal.</span></button>
+          <button type="button" class="mode" id="mRounds" aria-pressed="false"><b>Runde für Runde</b><span>Du lässt die KI in kleinen Runden üben und siehst, wie sie besser wird.</span></button>
+          <button type="button" class="mode" id="mManual" aria-pressed="false"><b>Von Hand</b><span>Du sagst der KI bei jedem Bild, was richtig ist.</span></button>
+        </div>
+        <div id="roundsBox" hidden style="display:grid;gap:12px">
+          <p class="hint" style="font-size:14px;color:var(--label)">Tippe auf „Eine Runde üben“. Die KI sieht dann alle Beispiele einmal. Halte etwas vor die Kamera und schau in der Vorschau, wie sicher sie nach jeder Runde ist.</p>
+          <div class="rstats">
+            <p class="rnum" id="rNum">Runde 0</p>
+            <p class="t2" id="rAcc">Genauigkeit: –</p>
+            <p class="t2" id="rLoss">Fehler: –</p>
+          </div>
+          <canvas id="rChart" class="rchart" hidden></canvas>
+          <div class="legend" id="rLegend" hidden><span><i style="background:#1967d2"></i>Üben</span><span><i style="background:#e8710a"></i>Test</span></div>
+          <button class="btn" id="rOne" type="button" disabled>Eine Runde üben</button>
+          <button class="btn sec" id="rTen" type="button" disabled>10 Runden üben</button>
+          <p class="hint" id="rHint"></p>
+          <button class="linkbtn" id="rReset" type="button" disabled>Von vorn anfangen</button>
+          <button class="linkbtn" id="rDetails" type="button" disabled>Details ansehen</button>
         </div>
         <div id="manualBox" hidden style="display:grid;gap:12px">
           <p class="hint" style="font-size:14px;color:var(--label)">Du bist die Lehrerin oder der Lehrer. Zeig der Kamera etwas, die KI rät, und du sagst ihr, was richtig ist. Mit jedem Tipp lernt sie sofort dazu, ohne „Modell trainieren“.</p>
@@ -407,6 +436,7 @@
   var ALPHA = [0.25, 0.5, 0.75, 1].indexOf(alphaParam) >= 0 ? alphaParam : 0.25;
   var MAX_EX = 300, MIN_EX = 2, DEFAULTS = { epochs: 50, batch: 16, lr: 0.001 };
   var MIN_PRESS_MS = 700;   // Jeder Druck auf den Aufnahme-Knopf nimmt mindestens so lange auf, auch ein kurzes Antippen
+  var ROUND_LR = 0.0015, ROUND_BATCH = 8;   // Beim Training Runde für Runde: etwas größere Schritte, damit man den Fortschritt sieht
   var PAL = [
     { c: '#1967d2', t: '#e8f0fe' }, { c: '#c25e00', t: '#fff1e0' }, { c: '#188038', t: '#e6f4ea' },
     { c: '#8430ce', t: '#f3e8fd' }, { c: '#c5221f', t: '#fce8e6' }, { c: '#0b7285', t: '#e3f6f9' }, { c: '#c2185b', t: '#fde7f1' }
@@ -432,7 +462,8 @@
     hist: { acc: [], vacc: [], loss: [], vloss: [] },
     pv: { input: 'cam' }, sound: false, speak: false, audio: null,
     lastWinner: -1, stable: 0, announced: -1, lastSay: 0,
-    manual: false, last: null, lastGuess: -1, teachHist: [], barSig: '', teachSig: ''
+    manual: false, last: null, lastGuess: -1, teachHist: [], barSig: '', teachSig: '',
+    tmode: 'auto', rounds: false, rd: null, rdStale: false, rdNote: ''
   };
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
   function byId(id){ for (var i = 0; i < S.classes.length; i++) if (S.classes[i].id === id) return S.classes[i]; return null; }
@@ -907,6 +938,10 @@
 
   /* ================= Training ================= */
   function markDirty(){
+    if (S.rounds && S.rd){
+      if (S.training) S.rdStale = true;                    // Während einer Runde: danach von vorn anfangen
+      else { disposeRounds(); S.rdNote = 'Neue Beispiele: Die KI fängt wieder von vorn an.'; }
+    }
     if (S.trained || S.head){ S.trained = false; renderPreview(); }
     if (S.manual) syncManual();
     refreshTrain();
@@ -923,6 +958,9 @@
       var any = S.classes.some(function(c){ return c.ex.length; });
       step = !any ? 1 : (S.teachHist.length < 6 ? 2 : 3);
       labels = ['Etwas zeigen', 'Der KI sagen, was es ist', 'Besser werden'];
+    } else if (S.rounds){
+      step = (S.rd && S.rd.epoch > 0) ? 3 : (!trainProblem() ? 2 : 1);
+      labels = ['Beispiele sammeln', 'Runden üben', 'Ausprobieren'];
     } else {
       step = S.trained ? 3 : ((S.training || !trainProblem()) ? 2 : 1);
       labels = ['Beispiele sammeln', 'Modell trainieren', 'Ausprobieren'];
@@ -939,6 +977,7 @@
     $('#btnDetails').disabled = !S.head;
     $('#doneBox').hidden = !S.trained || S.manual;
     if (S.manual){ renderStepper(); return; }
+    if (S.rounds){ refreshRounds(); renderStepper(); return; }
     if (S.training){ b.disabled = true; b.textContent = 'Training wird ausgeführt …'; hint.textContent = ''; renderStepper(); return; }
     if (S.trained){ b.disabled = true; b.textContent = 'Modell ist trainiert'; hint.textContent = ''; renderStepper(); return; }
     b.textContent = 'Modell trainieren'; b.disabled = !!prob; hint.textContent = prob; renderStepper();
@@ -1009,6 +1048,7 @@
     $('#prevWait').hidden = !!ok; $('#prevBody').hidden = !ok;
     $('#btnDetails').disabled = !S.head;
     $('#teachBox').hidden = !S.manual;
+    setText($('#prevWait p'), S.rounds ? 'Tippe links auf „Eine Runde üben“. Dann siehst du hier, wie die KI rät.' : 'Du musst links ein Modell trainieren, um es hier als Vorschau ansehen zu können.');
     if (!ok) return;
     if (S.manual) S.classOrder = active().map(function(c){ return c.id; });
     buildBars(true);
@@ -1095,14 +1135,91 @@
     h.slice(-14).forEach(function(v){ var s = document.createElement('span'); s.className = 'hd' + (v ? '' : ' no'); s.textContent = v ? '✓' : '✗'; d.appendChild(s); });
     renderStepper();
   }
-  function setManual(on){
-    if (on === S.manual) return;
-    stopRec();
-    S.manual = on;
-    $('#mAuto').setAttribute('aria-pressed', !on); $('#mManual').setAttribute('aria-pressed', on);
-    $('#autoBox').hidden = on; $('#manualBox').hidden = !on;
-    S.lastGuess = -1; S.last = null; S.teachHist = [];
-    if (on){ S.trained = false; if (S.head){ S.head.dispose(); S.head = null; } }
+  /* ================= Training Runde für Runde ================= */
+  // Das Netz wird einmal angelegt. Jeder Tipp übt eine (oder zehn) Runden weiter, und die Vorschau zeigt sofort, wie sicher die KI jetzt ist.
+  function initRounds(){
+    var act = active(), C = act.length, dim = S.dim, i;
+    var Xtr = [], Ytr = [], Xte = [], Yte = [];
+    act.forEach(function(c, ci){
+      var idx = shuffle(c.ex.map(function(_, k){ return k; })), n = idx.length;
+      var nt = n >= 6 ? Math.max(1, Math.round(n * 0.15)) : 0;
+      idx.forEach(function(k, j){ if (j < nt){ Xte.push(c.ex[k].f); Yte.push(ci); } else { Xtr.push(c.ex[k].f); Ytr.push(ci); } });
+    });
+    var mu = new Float32Array(dim);
+    Xtr.forEach(function(f){ for (i = 0; i < dim; i++) mu[i] += f[i]; });
+    for (i = 0; i < dim; i++) mu[i] /= Xtr.length;
+    var v = 0; Xtr.forEach(function(f){ for (i = 0; i < dim; i++){ var d = f[i] - mu[i]; v += d * d; } });
+    var sigma = Math.sqrt(v / (Xtr.length * dim)) || 1;
+    function norm(f){ var o = new Float32Array(dim); for (var q = 0; q < dim; q++) o[q] = (f[q] - mu[q]) / sigma; return o; }
+    function flat(arr){ var o = new Float32Array(arr.length * dim); arr.forEach(function(f, k){ o.set(norm(f), k * dim); }); return o; }
+    var xs = tf.tensor2d(flat(Xtr), [Xtr.length, dim]), ys = tf.oneHot(tf.tensor1d(Ytr, 'int32'), C).cast('float32');
+    var val = Xte.length ? [tf.tensor2d(flat(Xte), [Xte.length, dim]), tf.oneHot(tf.tensor1d(Yte, 'int32'), C).cast('float32')] : null;
+    var m = tf.sequential();
+    m.add(tf.layers.dense({ units: 100, activation: 'relu', inputShape: [dim] }));
+    m.add(tf.layers.dense({ units: C, activation: 'softmax' }));
+    m.compile({ optimizer: tf.train.adam(ROUND_LR), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
+    S.rd = { model: m, xs: xs, ys: ys, val: val, norm: norm, mu: mu, sigma: sigma, order: act.map(function(c){ return c.id; }),
+      test: { X: Xte.map(norm), Y: Yte }, epoch: 0, hist: { acc: [], vacc: [], loss: [], vloss: [] } };
+  }
+  function disposeRounds(){
+    var rd = S.rd; if (!rd) return;
+    try { rd.xs.dispose(); rd.ys.dispose(); if (rd.val){ rd.val[0].dispose(); rd.val[1].dispose(); } rd.model.dispose(); } catch (e) {}
+    if (S.head === rd.model){ S.head = null; }
+    S.rd = null; S.rdStale = false;
+  }
+  async function roundStep(n){
+    if (S.training || !S.rounds || trainProblem()) return;
+    if (!S.rd) initRounds();
+    var rd = S.rd; S.rdNote = ''; S.training = true; refreshRounds();
+    try {
+      await rd.model.fit(rd.xs, rd.ys, {
+        epochs: n, batchSize: ROUND_BATCH, shuffle: true, validationData: rd.val,
+        callbacks: { onEpochEnd: async function(ep, logs){
+          var a = logs.acc != null ? logs.acc : logs.accuracy, va = logs.val_acc != null ? logs.val_acc : logs.val_accuracy;
+          rd.epoch++; rd.hist.acc.push(a); rd.hist.loss.push(logs.loss);
+          if (va != null){ rd.hist.vacc.push(va); rd.hist.vloss.push(logs.val_loss); }
+          S.hist = rd.hist; refreshRounds(); await tf.nextFrame();
+        } }
+      });
+    } catch (e) { console.warn(e); toast('Beim Üben ist ein Fehler aufgetreten.'); }
+    S.head = rd.model; S.mu = rd.mu; S.sigma = rd.sigma; S.norm = rd.norm; S.classOrder = rd.order; S.test = rd.test; S.hist = rd.hist;
+    var first = !S.trained;
+    S.training = false; S.trained = true; S.lastWinner = -1; S.announced = -1;
+    if (S.rdStale){ disposeRounds(); S.trained = false; S.rdNote = 'Neue Beispiele: Die KI fängt wieder von vorn an.'; renderPreview(); }
+    else if (first) renderPreview();
+    refreshTrain();
+  }
+  function refreshRounds(){
+    var prob = trainProblem(), rd = S.rd, busy = S.training;
+    $('#rOne').disabled = !!prob || busy; $('#rTen').disabled = !!prob || busy;
+    $('#rReset').disabled = !rd || busy; $('#rDetails').disabled = !S.head;
+    var h = rd ? rd.hist : null, n = h ? h.acc.length : 0;
+    setText($('#rNum'), 'Runde ' + (rd ? rd.epoch : 0));
+    setText($('#rAcc'), n ? 'Beim Üben richtig: ' + Math.round(h.acc[n - 1] * 100) + ' %' + (h.vacc.length ? ' · Test: ' + Math.round(h.vacc[h.vacc.length - 1] * 100) + ' %' : '') : 'Genauigkeit: –');
+    setText($('#rLoss'), n ? 'Fehler: ' + h.loss[n - 1].toFixed(2) : 'Fehler: –');
+    var cv = $('#rChart'); cv.hidden = !n; $('#rLegend').hidden = !n;
+    if (n) lineChart(cv, [{ d: h.acc, c: '#1967d2' }, { d: h.vacc, c: '#e8710a' }], 'Genauigkeit pro Runde');
+    setText($('#rHint'), prob || S.rdNote || (busy ? 'Die KI übt …' : (rd ? 'Tippe noch einmal, bis die KI sicher ist.' : 'Tippe auf „Eine Runde üben“.')));
+  }
+
+  /* ================= Art des Trainings wechseln ================= */
+  function resetMode(){
+    S.tmode = 'auto'; S.manual = false; S.rounds = false; S.teachHist = []; S.last = null; S.lastGuess = -1;
+    S.barSig = ''; S.teachSig = ''; S.rdNote = ''; S.rdStale = false;
+    ['mAuto', 'mRounds', 'mManual'].forEach(function(id){ $('#' + id).setAttribute('aria-pressed', id === 'mAuto' ? 'true' : 'false'); });
+    $('#autoBox').hidden = false; $('#roundsBox').hidden = true; $('#manualBox').hidden = true; $('#teachBox').hidden = true;
+  }
+  function setMode(m){
+    if (m === S.tmode) return;
+    if (S.training){ toast('Warte, bis die KI fertig geübt hat.'); return; }
+    stopRec(); disposeRounds();
+    if (S.head){ S.head.dispose(); S.head = null; }
+    S.trained = false;
+    S.tmode = m; S.manual = m === 'manual'; S.rounds = m === 'rounds';
+    var map = { mAuto: 'auto', mRounds: 'rounds', mManual: 'manual' };
+    Object.keys(map).forEach(function(id){ $('#' + id).setAttribute('aria-pressed', map[id] === m ? 'true' : 'false'); });
+    $('#autoBox').hidden = m !== 'auto'; $('#roundsBox').hidden = m !== 'rounds'; $('#manualBox').hidden = m !== 'manual';
+    S.lastGuess = -1; S.last = null; S.teachHist = []; S.rdNote = '';
     $('#doneBox').hidden = true;
     renderTeachStats(); renderPreview(); refreshTrain();
   }
@@ -1278,9 +1395,7 @@
   async function startProject(type){
     var ok = await prepare(type); if (!ok) return;
     S.type = type; S.classes = []; S.nextId = 1; S.head = null; S.trained = false; S.rec = null; S.openId = null;
-    S.manual = false; S.teachHist = []; S.last = null; S.lastGuess = -1; S.barSig = ''; S.teachSig = '';
-    $('#mAuto').setAttribute('aria-pressed', 'true'); $('#mManual').setAttribute('aria-pressed', 'false');
-    $('#autoBox').hidden = false; $('#manualBox').hidden = true; $('#teachBox').hidden = true;
+    disposeRounds(); resetMode();
     S.rs = type === 'pose' ? { delayOn: true, delay: 3, durOn: true, dur: 5, fps: 10 } : { delayOn: false, delay: 3, durOn: false, dur: 5, fps: 10 };
     $('#classes').innerHTML = ''; $('#start').hidden = true; $('#app').hidden = false; $('#kind').textContent = type === 'pose' ? 'Posenprojekt' : 'Bildprojekt';
     $('#btnMenu').innerHTML = icon('menu');
@@ -1290,7 +1405,8 @@
   function newProject(){
     var has = S.classes.some(function(c){ return c.ex.length; });
     if (has && !confirm('Neues Projekt beginnen? Alle Beispiele und das Modell gehen verloren.')) return;
-    stopRec(); closeWebcam(); stopCamera();
+    if (S.training){ toast('Warte, bis die KI fertig geübt hat.'); return; }
+    stopRec(); closeWebcam(); stopCamera(); disposeRounds();
     if (S.head){ S.head.dispose(); S.head = null; }
     S.trained = false; S.classes = []; $('#classes').innerHTML = ''; $('#app').hidden = true; $('#start').hidden = false;
   }
@@ -1327,8 +1443,13 @@
     train();
   });
   $('#btnStop').addEventListener('click', function(){ S.stopReq = true; });
-  $('#mAuto').addEventListener('click', function(){ setManual(false); });
-  $('#mManual').addEventListener('click', function(){ setManual(true); });
+  $('#mAuto').addEventListener('click', function(){ setMode('auto'); });
+  $('#mRounds').addEventListener('click', function(){ setMode('rounds'); });
+  $('#mManual').addEventListener('click', function(){ setMode('manual'); });
+  $('#rOne').addEventListener('click', function(){ roundStep(1); });
+  $('#rTen').addEventListener('click', function(){ roundStep(10); });
+  $('#rReset').addEventListener('click', function(){ if (S.training) return; disposeRounds(); S.trained = false; S.rdNote = 'Die KI fängt von vorn an.'; renderPreview(); refreshTrain(); });
+  $('#rDetails').addEventListener('click', openDetails);
   $('#tYes').addEventListener('click', function(){ if (S.lastGuess >= 0) teach(S.lastGuess); else toast('Die KI hat noch nichts geraten. Sag ihr mit „Das ist …“, was du zeigst.', 3500); });
   $('#tReset').addEventListener('click', function(){ S.teachHist = []; renderTeachStats(); });
   $('#advReset').addEventListener('click', resetAdv);
@@ -1351,7 +1472,7 @@
   setInterval(updateRecUI, 150);
   loop();
 
-  window.__ki = { S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec, setManual: setManual, teach: teach, knnProbs: knnProbs };
+  window.__ki = { S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec, setMode: setMode, roundStep: roundStep, teach: teach, knnProbs: knnProbs };
 })();
 </script>
 </body>
