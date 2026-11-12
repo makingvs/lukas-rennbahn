@@ -195,6 +195,22 @@
   .chip[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
   .note{font-size:13px;color:var(--muted)}
 
+  /* ===== Manuelles Training („Du bist die Lehrerin“) ===== */
+  .tstats{background:var(--blue-l);border-radius:10px;padding:12px 14px;display:grid;gap:6px}
+  .tstats .t1{font-weight:700;color:var(--blue-d)}
+  .tstats .t2{font-size:13px;color:var(--label)}
+  .dotsrow{display:flex;gap:4px;flex-wrap:wrap;min-height:22px}
+  .hd{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:var(--ok)}
+  .hd.no{background:var(--warn)}
+  .teach{display:grid;gap:8px}
+  .tbs{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+  .tb{border:0;border-radius:10px;background:var(--c,var(--blue));color:#fff;font-weight:700;min-height:58px;padding:8px 12px;text-align:left;line-height:1.2;transition:transform .08s}
+  .tb:active{transform:scale(.96)}
+  .tb small{display:block;font-weight:500;opacity:.92;font-size:12px}
+  .tb.yes{background:var(--ok);font-size:17px;text-align:center}
+  .thint{margin:8px 4px 0}
+  .thumbs img{cursor:pointer}
+
   /* ===== Dialoge und Hinweise ===== */
   .modal{position:fixed;inset:0;background:rgba(32,33,36,.55);display:grid;place-items:center;z-index:60;padding:16px}
   .sheet{background:#fff;border-radius:16px;max-width:780px;width:100%;max-height:92vh;overflow:auto;padding:20px 22px;box-shadow:0 8px 30px rgba(0,0,0,.4);display:grid;gap:14px;-webkit-overflow-scrolling:touch}
@@ -281,6 +297,20 @@
     <section class="col col-train">
       <div class="card">
         <h2>Training</h2>
+        <div class="seg" id="modeSeg" role="group" aria-label="Art des Trainings">
+          <button type="button" id="mAuto" aria-pressed="true">Automatisch</button>
+          <button type="button" id="mManual" aria-pressed="false">Von Hand</button>
+        </div>
+        <div id="manualBox" hidden style="display:grid;gap:12px">
+          <p class="hint" style="font-size:14px;color:var(--label)">Du bist die Lehrerin oder der Lehrer. Zeig der Kamera etwas, die KI rät, und du sagst ihr, was richtig ist. Mit jedem Tipp lernt sie sofort dazu, ohne „Modell trainieren“.</p>
+          <div class="tstats">
+            <p class="t1" id="tRate">Noch keine Antworten.</p>
+            <p class="t2" id="tStreak">Richtig in Folge: 0</p>
+            <div class="dotsrow" id="tDots"></div>
+          </div>
+          <button class="linkbtn" id="tReset" type="button">Antworten zurücksetzen</button>
+        </div>
+        <div id="autoBox" style="display:grid;gap:12px">
         <button class="btn" id="btnTrain" type="button" disabled>Modell trainieren</button>
         <div id="trainProg" hidden>
           <div class="think"><span class="spin"></span><span>Die KI übt<span class="dots"><i></i><i></i><i></i></span></span></div>
@@ -306,6 +336,7 @@
             <button class="linkbtn" id="btnDetails" type="button" disabled>Details ansehen</button>
           </div>
         </details>
+        </div>
       </div>
     </section>
 
@@ -338,6 +369,11 @@
           <div class="verdict" id="verdict" aria-live="polite">
             <span class="sw"></span>
             <div><div class="t1">Die KI sagt</div><div class="t2" id="vName">…</div><div class="t3" id="vNote">Zeig der KI etwas.</div></div>
+          </div>
+          <div class="teach" id="teachBox" hidden>
+            <b style="font-weight:700;color:var(--label)">Sag der KI, was das ist</b>
+            <button class="tb yes" id="tYes" type="button">✓ Stimmt</button>
+            <div class="tbs" id="tBtns"></div>
           </div>
           <div>
             <b style="font-weight:700;color:var(--label)">Ausgabe</b>
@@ -395,7 +431,8 @@
     head: null, trained: false, training: false, stopReq: false, classOrder: [], mu: null, sigma: 1, test: { X: [], Y: [] },
     hist: { acc: [], vacc: [], loss: [], vloss: [] },
     pv: { input: 'cam' }, sound: false, speak: false, audio: null,
-    lastWinner: -1, stable: 0, announced: -1, lastSay: 0
+    lastWinner: -1, stable: 0, announced: -1, lastSay: 0,
+    manual: false, last: null, lastGuess: -1, teachHist: [], barSig: '', teachSig: ''
   };
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
   function byId(id){ for (var i = 0; i < S.classes.length; i++) if (S.classes[i].id === id) return S.classes[i]; return null; }
@@ -604,11 +641,12 @@
       '</div>' +
       '<p class="lab"></p>' +
       '<div class="body"><div class="left"></div><div class="thumbs"></div></div>' +
+      '<p class="hint thint" hidden>Falsch einsortiert? Tippe auf ein Bild, um es zu entfernen.</p>' +
       '<p class="warn" hidden></p>';
     var ui = c.ui;
     ui.card = card; ui.name = $('.cls-name', card); ui.pen = $('.pen', card); ui.tag = $('.tag', card);
     ui.dots = $('.dots', card); ui.dd = $('.dd', card); ui.lab = $('.lab', card); ui.left = $('.left', card);
-    ui.thumbs = $('.thumbs', card); ui.warn = $('.warn', card);
+    ui.thumbs = $('.thumbs', card); ui.warn = $('.warn', card); ui.thint = $('.thint', card);
     ui.name.value = c.name;
     ui.pen.addEventListener('click', function(){ ui.name.readOnly = false; ui.name.focus(); ui.name.select(); });
     function commit(){ ui.name.readOnly = true; var v = ui.name.value.trim(); c.name = v || c.name; ui.name.value = c.name; refreshBarNames(); }
@@ -644,7 +682,7 @@
   }
   function refreshCard(c){
     var ui = c.ui;
-    ui.lab.textContent = labelFor(c);
+    ui.lab.textContent = labelFor(c); ui.thint.hidden = !c.ex.length;
     ui.card.classList.toggle('off', c.off);
     ui.tag.hidden = !c.off;
     $('[data-a=toggle]', ui.dd).textContent = c.off ? 'Klasse aktivieren' : 'Klasse deaktivieren';
@@ -662,12 +700,27 @@
   function closeMenus(){ document.querySelectorAll('.dd').forEach(function(d){ d.hidden = true; }); }
   document.addEventListener('click', closeMenus);
 
+  // Vorbereitete Form eines Merkmals für den Vergleich beim Training von Hand (Bild: Länge 1, Pose: unverändert)
+  function prep(f){
+    if (S.type === 'pose') return f;
+    var n = 0, i, o = new Float32Array(f.length);
+    for (i = 0; i < f.length; i++) n += f[i] * f[i];
+    n = Math.sqrt(n) || 1;
+    for (i = 0; i < f.length; i++) o[i] = f[i] / n;
+    return o;
+  }
   function addExample(c, f, th){
     if (c.ex.length >= MAX_EX) return false;
-    c.ex.push({ f: f });
-    var im = document.createElement('img'); im.src = th; im.alt = ''; c.ui.thumbs.appendChild(im);
+    var im = document.createElement('img'); im.src = th; im.alt = 'Beispiel, tippen zum Entfernen'; im.title = 'Tippen zum Entfernen';
+    var e = { f: f, u: prep(f), el: im };
+    c.ex.push(e);
+    im.addEventListener('click', function(){
+      var k = c.ex.indexOf(e);
+      if (k >= 0){ c.ex.splice(k, 1); im.remove(); c.ui.lab.textContent = labelFor(c); c.ui.thint.hidden = !c.ex.length; markDirty(); }
+    });
+    c.ui.thumbs.appendChild(im);
     c.ui.thumbs.scrollTop = c.ui.thumbs.scrollHeight;
-    c.ui.lab.textContent = labelFor(c);
+    c.ui.lab.textContent = labelFor(c); c.ui.thint.hidden = false;
     markDirty();
     return true;
   }
@@ -855,6 +908,7 @@
   /* ================= Training ================= */
   function markDirty(){
     if (S.trained || S.head){ S.trained = false; renderPreview(); }
+    if (S.manual) syncManual();
     refreshTrain();
   }
   function trainProblem(){
@@ -864,17 +918,27 @@
     return '';
   }
   function renderStepper(){
-    var step = S.trained ? 3 : ((S.training || !trainProblem()) ? 2 : 1);
+    var step, labels;
+    if (S.manual){
+      var any = S.classes.some(function(c){ return c.ex.length; });
+      step = !any ? 1 : (S.teachHist.length < 6 ? 2 : 3);
+      labels = ['Etwas zeigen', 'Der KI sagen, was es ist', 'Besser werden'];
+    } else {
+      step = S.trained ? 3 : ((S.training || !trainProblem()) ? 2 : 1);
+      labels = ['Beispiele sammeln', 'Modell trainieren', 'Ausprobieren'];
+    }
     document.querySelectorAll('#stepper li[data-s]').forEach(function(li){
       var n = parseInt(li.getAttribute('data-s'), 10), b = $('b', li);
       li.classList.toggle('act', n === step); li.classList.toggle('done', n < step);
       b.textContent = n < step ? '✓' : String(n);
+      if (li.childNodes[1] && li.childNodes[1].nodeValue !== labels[n - 1]) li.childNodes[1].nodeValue = labels[n - 1];
     });
   }
   function refreshTrain(){
     var b = $('#btnTrain'), hint = $('#trainHint'), prob = trainProblem();
     $('#btnDetails').disabled = !S.head;
-    $('#doneBox').hidden = !S.trained;
+    $('#doneBox').hidden = !S.trained || S.manual;
+    if (S.manual){ renderStepper(); return; }
     if (S.training){ b.disabled = true; b.textContent = 'Training wird ausgeführt …'; hint.textContent = ''; renderStepper(); return; }
     if (S.trained){ b.disabled = true; b.textContent = 'Modell ist trainiert'; hint.textContent = ''; renderStepper(); return; }
     b.textContent = 'Modell trainieren'; b.disabled = !!prob; hint.textContent = prob; renderStepper();
@@ -941,10 +1005,21 @@
 
   /* ================= Vorschau ================= */
   function renderPreview(){
-    var ok = S.trained && S.head;
+    var ok = S.manual || (S.trained && S.head);
     $('#prevWait').hidden = !!ok; $('#prevBody').hidden = !ok;
     $('#btnDetails').disabled = !S.head;
+    $('#teachBox').hidden = !S.manual;
     if (!ok) return;
+    if (S.manual) S.classOrder = active().map(function(c){ return c.id; });
+    buildBars(true);
+    if (S.manual) buildTeachButtons(true);
+    setVerdict(-1, 0, 'start');
+    setPvInput(S.pv.input);
+  }
+  function buildBars(force){
+    var sig = S.classOrder.map(function(id){ var c = byId(id); return id + ':' + (c ? c.name : ''); }).join('|');
+    if (!force && sig === S.barSig) return;
+    S.barSig = sig;
     var bars = $('#bars'); bars.innerHTML = '';
     S.classOrder.forEach(function(id){
       var c = byId(id); var row = document.createElement('div'); row.className = 'row'; row.setAttribute('data-id', id);
@@ -952,11 +1027,84 @@
       row.innerHTML = '<span class="nm"></span><div class="meter"><i></i></div><span class="pc">0 %</span>';
       $('.nm', row).textContent = c ? c.name : '?'; bars.appendChild(row);
     });
-    setVerdict(-1, 0, 'start');
-    setPvInput(S.pv.input);
   }
   function refreshBarNames(){
+    if (S.manual){ syncManual(); return; }
     document.querySelectorAll('#bars .row').forEach(function(r){ var c = byId(parseInt(r.getAttribute('data-id'), 10)); if (c) $('.nm', r).textContent = c.name; });
+  }
+
+  /* ================= Training von Hand ================= */
+  // Die KI rät mit den Beispielen, die schon da sind (nächste Nachbarn). Jeder Tipp fügt ein Beispiel hinzu,
+  // und die nächste Vermutung ist sofort besser. Es gibt keinen Trainings-Schritt.
+  function knnProbs(f){
+    var q = prep(f), tau = S.type === 'pose' ? 0.25 : (S.mode === 'model' ? 0.08 : 0.12), d = [], any = 0, mn = Infinity;
+    S.classOrder.forEach(function(id){
+      var c = byId(id);
+      if (!c || !c.ex.length){ d.push(null); return; }
+      var ds = c.ex.map(function(e){ var s = 0, u = e.u; for (var k = 0; k < q.length; k++){ var x = q[k] - u[k]; s += x * x; } return Math.sqrt(s); })
+        .sort(function(a, b){ return a - b; });
+      var m = Math.min(3, ds.length), s2 = 0; for (var j = 0; j < m; j++) s2 += ds[j];
+      d.push(s2 / m); any++;
+    });
+    if (!any) return null;
+    d.forEach(function(v){ if (v !== null && v < mn) mn = v; });
+    var sum = 0, p = d.map(function(v){ if (v === null) return 0; var e = Math.exp(-(v - mn) / tau); sum += e; return e; });
+    // Mit wenigen Beispielen ist die KI vorsichtiger: Je mehr Beispiele, desto sicherer darf sie sein.
+    var total = 0; S.classOrder.forEach(function(id){ var c = byId(id); if (c) total += c.ex.length; });
+    var lam = total / (total + 4);
+    return Float32Array.from(p.map(function(v, i){ return d[i] === null ? 0 : (v / sum) * lam + (1 - lam) / any; }));
+  }
+  function predictAny(f){
+    if (S.manual){ var p = knnProbs(f); return Promise.resolve(p || new Float32Array(S.classOrder.length)); }
+    return predict(f);
+  }
+  function syncManual(){
+    if (!S.manual) return;
+    S.classOrder = active().map(function(c){ return c.id; });
+    buildBars(false); buildTeachButtons(false);
+  }
+  function buildTeachButtons(force){
+    var sig = S.classOrder.map(function(id){ var c = byId(id); return id + ':' + (c ? c.name : ''); }).join('|');
+    if (!force && sig === S.teachSig) return;
+    S.teachSig = sig;
+    var box = $('#tBtns'); box.innerHTML = '';
+    S.classOrder.forEach(function(id){
+      var c = byId(id); if (!c) return;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'tb'; b.style.setProperty('--c', c.color);
+      b.innerHTML = '<small>Das ist</small><span></span>'; $('span', b).textContent = c.name;
+      b.addEventListener('click', function(){ teach(id); });
+      box.appendChild(b);
+    });
+  }
+  function teach(id){
+    var c = byId(id); if (!c) return;
+    var L = S.last;
+    if (!L || !L.f){ toast('Zeig der KI zuerst etwas. Die Kamera muss etwas erkennen.', 3500); return; }
+    var guess = S.lastGuess;
+    if (!addExample(c, L.f, L.th)){ toast('Diese Klasse hat schon ' + MAX_EX + ' Beispiele.'); return; }
+    if (guess >= 0){ S.teachHist.push(guess === id); if (S.teachHist.length > 40) S.teachHist.shift(); }
+    toast((guess >= 0 && guess !== id ? '✗ Falsch geraten. Gelernt: ' : '✓ Gelernt: ') + c.name, 1800);
+    renderTeachStats();
+  }
+  function renderTeachStats(){
+    var h = S.teachHist, last = h.slice(-10), ok = last.filter(Boolean).length, streak = 0, i;
+    for (i = h.length - 1; i >= 0 && h[i]; i--) streak++;
+    setText($('#tRate'), last.length ? 'Trefferquote: ' + Math.round(ok / last.length * 100) + ' % (letzte ' + last.length + ')' : 'Noch keine Antworten.');
+    setText($('#tStreak'), 'Richtig in Folge: ' + streak);
+    var d = $('#tDots'); d.innerHTML = '';
+    h.slice(-14).forEach(function(v){ var s = document.createElement('span'); s.className = 'hd' + (v ? '' : ' no'); s.textContent = v ? '✓' : '✗'; d.appendChild(s); });
+    renderStepper();
+  }
+  function setManual(on){
+    if (on === S.manual) return;
+    stopRec();
+    S.manual = on;
+    $('#mAuto').setAttribute('aria-pressed', !on); $('#mManual').setAttribute('aria-pressed', on);
+    $('#autoBox').hidden = on; $('#manualBox').hidden = !on;
+    S.lastGuess = -1; S.last = null; S.teachHist = [];
+    if (on){ S.trained = false; if (S.head){ S.head.dispose(); S.head = null; } }
+    $('#doneBox').hidden = true;
+    renderTeachStats(); renderPreview(); refreshTrain();
   }
   function setVerdict(best, p, mode){
     var v = $('#verdict'), c = best >= 0 ? byId(S.classOrder[best]) : null;
@@ -964,6 +1112,7 @@
     v.style.background = mode === 'sure' && c ? c.tint : '#f8f9fa';
     if (mode === 'sure' && c){ setText($('#vName'), c.name); setText($('#vNote'), 'Ich bin mir zu ' + Math.round(p * 100) + ' % sicher.'); }
     else if (mode === 'unsure' && c){ setText($('#vName'), 'Ich bin nicht sicher …'); setText($('#vNote'), 'Vielleicht ' + c.name + ' (' + Math.round(p * 100) + ' %). Zeig mehr Beispiele.'); }
+    else if (mode === 'few' && c){ setText($('#vName'), 'Ich kenne erst „' + c.name + '“'); setText($('#vNote'), 'Zeig mir auch etwas anderes und sag mir, was es ist.'); }
     else if (mode === 'noperson'){ setText($('#vName'), 'Keine Person erkannt'); setText($('#vNote'), 'Tritt etwas zurück, bis Kopf und Arme im Bild sind.'); }
     else { setText($('#vName'), '…'); setText($('#vNote'), 'Zeig der KI etwas.'); }
   }
@@ -996,15 +1145,18 @@
       $('i', r).style.width = pc + '%'; setText($('.pc', r), pc + ' %'); r.classList.toggle('top', i === best);
     });
     var mode = best < 0 ? 'start' : (bp >= 0.6 ? 'sure' : 'unsure');
+    if (S.manual && best >= 0 && active().filter(function(c){ return c.ex.length; }).length < 2) mode = 'few';
     setVerdict(best, bp, mode);
     return { best: best, p: bp };
   }
   async function pvTick(){
-    var r = await extractLocked($('#pvVideo')); if (!r || !S.trained) return;
+    var r = await extractLocked($('#pvVideo')); if (!r || (!S.trained && !S.manual)) return;
     drawSkel($('#pvOv'), r.pose || null);
-    if (!r.f){ renderProbs(S.classOrder.map(function(){ return 0; })); setVerdict(-1, 0, 'noperson'); announce(-1); return; }
-    var p = await predict(r.f); if (!S.trained) return;
-    var res = renderProbs(p); announce(res.p >= 0.6 ? res.best : -1);
+    if (!r.f){ S.last = null; S.lastGuess = -1; renderProbs(S.classOrder.map(function(){ return 0; })); setVerdict(-1, 0, 'noperson'); announce(-1); return; }
+    S.last = { f: r.f, th: r.th };
+    var p = await predictAny(r.f); if (!S.trained && !S.manual) return;
+    var res = renderProbs(p); S.lastGuess = res.best >= 0 ? S.classOrder[res.best] : -1;
+    announce(res.p >= 0.6 ? res.best : -1);
   }
   async function pvFile(f){
     try {
@@ -1012,8 +1164,9 @@
       var old = $('#pvImg').getAttribute('src'); if (old && old.indexOf('blob:') === 0) URL.revokeObjectURL(old);
       var u = URL.createObjectURL(f); $('#pvImg').src = u; $('#pvImg').hidden = false; $('#pvCover').hidden = true;
       var r = await extractLocked(im);
-      if (!r || !r.f){ renderProbs(S.classOrder.map(function(){ return 0; })); setVerdict(-1, 0, 'noperson'); return; }
-      var p = await predict(r.f); renderProbs(p);
+      if (!r || !r.f){ S.last = null; S.lastGuess = -1; renderProbs(S.classOrder.map(function(){ return 0; })); setVerdict(-1, 0, 'noperson'); return; }
+      S.last = { f: r.f, th: r.th };
+      var p = await predictAny(r.f); var res = renderProbs(p); S.lastGuess = res.best >= 0 ? S.classOrder[res.best] : -1;
     } catch (e) { toast('Das Bild konnte nicht geladen werden.'); }
   }
 
@@ -1125,6 +1278,9 @@
   async function startProject(type){
     var ok = await prepare(type); if (!ok) return;
     S.type = type; S.classes = []; S.nextId = 1; S.head = null; S.trained = false; S.rec = null; S.openId = null;
+    S.manual = false; S.teachHist = []; S.last = null; S.lastGuess = -1; S.barSig = ''; S.teachSig = '';
+    $('#mAuto').setAttribute('aria-pressed', 'true'); $('#mManual').setAttribute('aria-pressed', 'false');
+    $('#autoBox').hidden = false; $('#manualBox').hidden = true; $('#teachBox').hidden = true;
     S.rs = type === 'pose' ? { delayOn: true, delay: 3, durOn: true, dur: 5, fps: 10 } : { delayOn: false, delay: 3, durOn: false, dur: 5, fps: 10 };
     $('#classes').innerHTML = ''; $('#start').hidden = true; $('#app').hidden = false; $('#kind').textContent = type === 'pose' ? 'Posenprojekt' : 'Bildprojekt';
     $('#btnMenu').innerHTML = icon('menu');
@@ -1146,7 +1302,7 @@
       var wait = 120;
       try {
         if (!document.hidden && S.type && !S.rec && !S.training){
-          var canPv = S.trained && S.head && S.pv.input === 'cam' && S.stream && $('#pvVideo').videoWidth > 0;
+          var canPv = (S.manual || (S.trained && S.head)) && S.pv.input === 'cam' && S.stream && $('#pvVideo').videoWidth > 0;
           var canSk = S.openId && S.type === 'pose' && S.stream;
           altTick = !altTick;
           if (canPv && (!canSk || altTick)){ await pvTick(); wait = 70; }
@@ -1171,6 +1327,10 @@
     train();
   });
   $('#btnStop').addEventListener('click', function(){ S.stopReq = true; });
+  $('#mAuto').addEventListener('click', function(){ setManual(false); });
+  $('#mManual').addEventListener('click', function(){ setManual(true); });
+  $('#tYes').addEventListener('click', function(){ if (S.lastGuess >= 0) teach(S.lastGuess); else toast('Die KI hat noch nichts geraten. Sag ihr mit „Das ist …“, was du zeigst.', 3500); });
+  $('#tReset').addEventListener('click', function(){ S.teachHist = []; renderTeachStats(); });
   $('#advReset').addEventListener('click', resetAdv);
   $('#btnDetails').addEventListener('click', openDetails);
   $('#inCam').addEventListener('click', function(){ setPvInput('cam'); });
@@ -1191,7 +1351,7 @@
   setInterval(updateRecUI, 150);
   loop();
 
-  window.__ki = { S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec };
+  window.__ki = { S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec, setManual: setManual, teach: teach, knnProbs: knnProbs };
 })();
 </script>
 </body>
