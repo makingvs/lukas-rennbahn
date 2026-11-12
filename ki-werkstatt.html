@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f4f6fb">
+<title>KI-Werkstatt</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --ink:#1c2233; --muted:#5d6579; --card:#ffffff; --line:#e1e5ef;
+    --accent:#3b5bdb; --soft:#e9ecf5; --warn:#b84a00; --warn-bg:#fff1e6;
+    color-scheme: light;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink)}
+  body{
+    font:17px/1.4 ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;
+  }
+  button{font:inherit;color:inherit;cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+  /* Kopfzeile */
+  .top{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:14px 18px}
+  .top h1{font-size:26px;margin:0;line-height:1.1}
+  .top .sub{color:var(--muted);font-size:15px;flex:1 1 180px}
+  .tools{display:flex;flex-wrap:wrap;gap:8px}
+  .tool{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:9px 14px;font-weight:700;min-height:44px}
+  .tool[aria-pressed="true"]{border-color:var(--accent);background:#edf1ff;color:var(--accent)}
+
+  /* Layout */
+  .layout{display:grid;gap:16px;padding:0 18px 28px;grid-template-columns:minmax(0,1fr)}
+  @media (min-width:900px){
+    .layout{grid-template-columns:minmax(320px,38%) minmax(0,1fr);align-items:start}
+    .left{position:sticky;top:12px}
+    .classes{grid-template-columns:minmax(0,1fr)!important}
+  }
+
+  /* Kamera */
+  .cam{position:relative;aspect-ratio:4/3;background:#0f1424;border-radius:22px;overflow:hidden}
+  .cam video{width:100%;height:100%;object-fit:cover;display:block}
+  .cam video.mirror{transform:scaleX(-1)}
+  .overlay{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:12px;
+    background:rgba(15,20,36,.9);color:#fff;text-align:center;padding:22px}
+  .overlay[hidden]{display:none}
+  .overlay h2{margin:0;font-size:24px}
+  .overlay p{margin:0;max-width:34ch;color:#d5daea;font-size:16px}
+  .overlay .err{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;font-weight:600}
+  .big{border:0;background:var(--accent);color:#fff;font-weight:800;font-size:20px;padding:16px 28px;border-radius:18px;min-height:56px}
+  .big:disabled{opacity:.6}
+
+  .result{margin-top:14px;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px 18px;
+    display:flex;align-items:center;gap:16px;min-height:104px}
+  .result .em{font-size:56px;line-height:1;flex:none;width:68px;text-align:center}
+  .result .t1{font-size:14px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .result .t2{font-size:26px;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+  .result .t3{font-size:15px;color:var(--muted);margin-top:2px}
+  .status{margin:10px 4px 0;font-size:14px;color:var(--muted)}
+
+  /* Klassen */
+  .classes{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .cls{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px;display:grid;gap:10px;
+    grid-template-columns:minmax(0,1fr);min-width:0;transition:box-shadow .15s,border-color .15s}
+  .cls.win{border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 28%,transparent)}
+  .head{display:flex;align-items:center;gap:8px}
+  .emo{flex:none;width:48px;height:48px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:28px;line-height:1;padding:0}
+  .name{flex:1 1 auto;min-width:0;border:2px solid var(--line);border-radius:14px;padding:9px 12px;
+    font:inherit;font-weight:800;font-size:18px;color:var(--c);background:#fff;-webkit-user-select:text;user-select:text}
+  .clear{flex:none;width:48px;height:48px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:22px;padding:0}
+  .hold{width:100%;min-height:78px;border:0;border-radius:18px;background:var(--c);color:#fff;font-weight:800;font-size:19px;
+    display:flex;align-items:center;justify-content:center;gap:10px;touch-action:none}
+  .hold:disabled{opacity:.45;cursor:not-allowed}
+  .hold .dot{width:14px;height:14px;border-radius:50%;background:#fff;opacity:.55}
+  .hold.on{box-shadow:inset 0 0 0 5px rgba(255,255,255,.85);transform:scale(.985)}
+  .hold.on .dot{background:#ff4d4d;opacity:1;animation:pulse .7s infinite alternate}
+  @keyframes pulse{to{transform:scale(1.5)}}
+  @media (prefers-reduced-motion:reduce){.hold.on .dot{animation:none}}
+  .count{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;align-items:baseline;font-size:15px}
+  .count b{font-size:22px;font-variant-numeric:tabular-nums}
+  .count span{color:var(--muted);text-align:right}
+  .thumbs{display:flex;gap:4px;min-height:38px;overflow:hidden;flex-wrap:nowrap}
+  .thumbs canvas{flex:none;width:50px;height:38px;border-radius:7px;background:var(--soft)}
+  .meter{display:flex;align-items:center;gap:10px}
+  .bar{flex:1;height:18px;background:var(--soft);border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--c);border-radius:99px;transition:width .15s}
+  .pct{width:56px;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+  .add{border:2px dashed var(--line);background:transparent;border-radius:18px;min-height:56px;font-weight:800;color:var(--muted);width:100%;margin-top:14px}
+  .foot{margin:6px 0 0;font-size:14px;color:var(--muted);padding:0 4px}
+  noscript{display:block;padding:20px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>KI-Werkstatt</h1>
+  <span class="sub">Bring der KI etwas bei: zeig ihr Beispiele und teste sie.</span>
+  <div class="tools">
+    <button class="tool" id="btnFlip" type="button">🔄 Kamera wechseln</button>
+    <button class="tool" id="btnSound" type="button" aria-pressed="false">🔔 Ton: aus</button>
+    <button class="tool" id="btnSpeak" type="button" aria-pressed="false">🗣 Sprache: aus</button>
+    <button class="tool" id="btnReset" type="button">↺ Neu starten</button>
+  </div>
+</header>
+
+<noscript>Diese Seite braucht JavaScript.</noscript>
+
+<main class="layout">
+  <section class="left">
+    <div class="cam">
+      <video id="video" playsinline muted autoplay></video>
+      <div class="overlay" id="overlay">
+        <h2>Los geht's!</h2>
+        <p>Die Kamera sieht, was du der KI zeigst. Alles bleibt auf diesem iPad, es werden keine Bilder verschickt.</p>
+        <button class="big" id="btnStart" type="button">📷 Kamera starten</button>
+        <div class="err" id="err" hidden></div>
+      </div>
+    </div>
+    <div class="result" id="result" aria-live="polite">
+      <div class="em" id="resEm">🤖</div>
+      <div>
+        <div class="t1">Die KI denkt</div>
+        <div class="t2" id="resName">Noch nichts gelernt</div>
+        <div class="t3" id="resNote">Starte die Kamera und zeig der KI Beispiele.</div>
+      </div>
+    </div>
+    <p class="status" id="status"></p>
+  </section>
+
+  <section class="right">
+    <div class="classes" id="classes"></div>
+    <button class="add" id="btnAdd" type="button">＋ Noch eine Klasse</button>
+    <p class="foot">So geht's: Gegenstand vor die Kamera halten, den farbigen Knopf gedrückt halten und den Gegenstand dabei bewegen. Mach das für jede Klasse, dann zeig der KI etwas und sieh, was sie sagt.</p>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- Einstellungen ---------- */
+  var TF_URL = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js';
+  var MN_URL = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js';
+  var q = new URLSearchParams(location.search);
+  var alphaParam = parseFloat(q.get('alpha'));
+  var ALPHA = [0.25, 0.5, 0.75, 1].indexOf(alphaParam) >= 0 ? alphaParam : 0.25;
+  var COLORS = ['#0b8457', '#6741d9', '#d9480f', '#1971c2', '#c2255c'];
+  var COLOR_NAMES = ['Grün', 'Lila', 'Orange', 'Blau', 'Pink'];
+  var EMOJIS = ['🟢','🟣','🟠','🔵','🔴','🐶','🐱','✏️','🥤','✋','🍎','⚽','🚗','⭐','🧸','📘'];
+  var DEFAULT_EMOJI = ['🟢','🟣','🟠','🔵','🔴'];
+  var PITCH = [440, 554, 659, 784, 880];
+  var MAX_CLASSES = 5, START_CLASSES = 3, MAX_EX = 150, THUMBS = 12;
+  var CONFIDENT = 0.6;
+
+  /* ---------- Zustand ---------- */
+  var $ = function(s){ return document.querySelector(s); };
+  var video = $('#video');
+  var st = {
+    classes: [], rec: -1, model: null, mode: 'init', ready: false, camOn: false,
+    facing: 'user', stream: null, sound: false, speak: false, audio: null,
+    lastWinner: -1, stable: 0, announced: -1, lastSay: 0
+  };
+
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function setStatus(t){ $('#status').textContent = t; }
+
+  /* ---------- Klassen aufbauen ---------- */
+  function addClass(){
+    if (st.classes.length >= MAX_CLASSES) return;
+    var i = st.classes.length;
+    var c = { name: COLOR_NAMES[i], emoji: DEFAULT_EMOJI[i], color: COLORS[i], ex: [], el: {} };
+    st.classes.push(c);
+    var card = document.createElement('div');
+    card.className = 'cls';
+    card.style.setProperty('--c', c.color);
+    card.innerHTML =
+      '<div class="head">' +
+        '<button class="emo" type="button" aria-label="Symbol wechseln"></button>' +
+        '<input class="name" type="text" maxlength="20" aria-label="Name der Klasse">' +
+        '<button class="clear" type="button" aria-label="Beispiele dieser Klasse löschen" title="Beispiele löschen">🗑</button>' +
+      '</div>' +
+      '<button class="hold" type="button" disabled><span class="dot"></span><span class="lbl">Gedrückt halten zum Lernen</span></button>' +
+      '<div class="count"><b>0</b><span class="hint"></span></div>' +
+      '<div class="thumbs"></div>' +
+      '<div class="meter"><div class="bar"><i></i></div><span class="pct">0 %</span></div>';
+    $('#classes').appendChild(card);
+    c.el = {
+      card: card, emo: card.querySelector('.emo'), name: card.querySelector('.name'),
+      clear: card.querySelector('.clear'), hold: card.querySelector('.hold'),
+      lbl: card.querySelector('.lbl'), num: card.querySelector('.count b'),
+      hint: card.querySelector('.hint'), thumbs: card.querySelector('.thumbs'),
+      bar: card.querySelector('.bar i'), pct: card.querySelector('.pct')
+    };
+    c.el.emo.textContent = c.emoji;
+    c.el.name.value = c.name;
+    c.el.name.addEventListener('input', function(){ c.name = c.el.name.value.trim() || ('Klasse ' + (i + 1)); });
+    c.el.emo.addEventListener('click', function(){
+      var k = EMOJIS.indexOf(c.emoji);
+      c.emoji = EMOJIS[(k + 1) % EMOJIS.length];
+      c.el.emo.textContent = c.emoji;
+    });
+    c.el.clear.addEventListener('click', function(){ clearClass(i); });
+    wireHold(i);
+    updateCount(i);
+    c.el.hold.disabled = !st.ready || !st.camOn;
+    $('#btnAdd').hidden = st.classes.length >= MAX_CLASSES;
+  }
+
+  function wireHold(i){
+    var b = st.classes[i].el.hold;
+    function down(e){
+      if (b.disabled) return;
+      if (e.preventDefault) e.preventDefault();
+      if (e.pointerId !== undefined && b.setPointerCapture) { try { b.setPointerCapture(e.pointerId); } catch (x) {} }
+      st.rec = i; b.classList.add('on'); b.querySelector('.lbl').textContent = 'Ich lerne …';
+    }
+    function up(){
+      if (st.rec === i) st.rec = -1;
+      b.classList.remove('on'); b.querySelector('.lbl').textContent = 'Gedrückt halten zum Lernen';
+    }
+    b.addEventListener('pointerdown', down);
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function(n){ b.addEventListener(n, up); });
+    b.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    b.addEventListener('keydown', function(e){ if ((e.key === ' ' || e.key === 'Enter') && !e.repeat){ e.preventDefault(); down(e); } });
+    b.addEventListener('keyup', function(e){ if (e.key === ' ' || e.key === 'Enter'){ up(); } });
+    b.addEventListener('blur', up);
+  }
+
+  function updateCount(i){
+    var c = st.classes[i], n = c.ex.length;
+    c.el.num.textContent = n;
+    var h;
+    if (n === 0) h = 'Noch keine Beispiele';
+    else if (n < 10) h = 'Noch zu wenig. Mehr!';
+    else if (n < 30) h = 'Schon besser! Andere Winkel?';
+    else h = 'Super, das reicht erst mal!';
+    c.el.hint.textContent = h;
+  }
+
+  function clearClass(i){
+    var c = st.classes[i];
+    c.ex = []; c.el.thumbs.innerHTML = '';
+    updateCount(i);
+    c.el.bar.style.width = '0%'; c.el.pct.textContent = '0 %';
+    st.announced = -1;
+  }
+
+  function resetAll(){
+    if (!confirm('Alles löschen und neu anfangen?')) return;
+    for (var i = 0; i < st.classes.length; i++) clearClass(i);
+    showResult(-1, 0, 'none');
+  }
+
+  /* ---------- Kamera ---------- */
+  function camError(e){
+    var msg = 'Die Kamera konnte nicht gestartet werden.';
+    var n = e && e.name;
+    if (!window.isSecureContext) msg = 'Diese Seite muss über https geöffnet werden, sonst erlaubt der Browser die Kamera nicht.';
+    else if (n === 'NotAllowedError' || n === 'SecurityError') msg = 'Kamera nicht erlaubt. Öffne am iPad: Einstellungen → Safari → Kamera → „Fragen“ oder „Erlauben“. Dann diese Seite neu laden.';
+    else if (n === 'NotFoundError' || n === 'OverconstrainedError') msg = 'Keine Kamera gefunden. Probiere „Kamera wechseln“.';
+    else if (n === 'NotReadableError') msg = 'Die Kamera wird gerade von einer anderen App benutzt. Schließe die andere App und lade die Seite neu.';
+    var el = $('#err'); el.textContent = msg; el.hidden = false;
+    $('#overlay').hidden = false; $('#btnStart').disabled = false;
+  }
+
+  async function startCamera(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      camError({ name: 'SecurityError' }); return false;
+    }
+    if (st.stream){ st.stream.getTracks().forEach(function(t){ t.stop(); }); st.stream = null; }
+    var stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: st.facing }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false
+      });
+    } catch (e) { camError(e); return false; }
+    st.stream = stream;
+    video.srcObject = stream;
+    video.classList.toggle('mirror', st.facing === 'user');
+    try { await video.play(); } catch (e) { /* Autoplay: Nutzer hat gerade getippt, meist ok */ }
+    st.camOn = true;
+    $('#overlay').hidden = true; $('#err').hidden = true;
+    refreshButtons();
+    return true;
+  }
+
+  function refreshButtons(){
+    st.classes.forEach(function(c){ c.el.hold.disabled = !(st.ready && st.camOn); });
+  }
+
+  /* ---------- KI-Modell ---------- */
+  function loadScript(src){
+    return new Promise(function(res, rej){
+      var s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = function(){ rej(new Error('Laden fehlgeschlagen: ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function withTimeout(p, ms){
+    return Promise.race([p, new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('Zeitüberschreitung')); }, ms); })]);
+  }
+
+  async function loadModel(){
+    setStatus('KI-Modell wird geladen …');
+    try {
+      await withTimeout(loadScript(TF_URL), 30000);
+      await withTimeout(loadScript(MN_URL), 30000);
+      await tf.ready();
+      var m = await withTimeout(mobilenet.load({ version: 1, alpha: ALPHA }), 60000);
+      var z = tf.zeros([224, 224, 3]);
+      var e = m.infer(z, true); await e.data(); e.dispose(); z.dispose();
+      st.model = m; st.mode = 'model';
+      setStatus('Bereit. Die KI nutzt ein vortrainiertes Bildmodell (' + tf.getBackend() + ').');
+    } catch (err) {
+      console.warn(err);
+      st.model = null; st.mode = 'pixel';
+      setStatus('Einfacher Modus: Das KI-Modell ist nicht erreichbar, die KI vergleicht nur grobe Bildpunkte. Mit Internet wird sie besser.');
+    }
+    st.ready = true; refreshButtons();
+  }
+
+  /* ---------- Merkmale ---------- */
+  var pc = document.createElement('canvas'); pc.width = 16; pc.height = 16;
+  var px = pc.getContext('2d', { willReadFrequently: true });
+  function pixelFeat(){
+    px.drawImage(video, 0, 0, 16, 16);
+    var d = px.getImageData(0, 0, 16, 16).data, f = new Float32Array(768), k = 0, m = 0, i;
+    for (i = 0; i < d.length; i += 4){ f[k++] = d[i]; f[k++] = d[i + 1]; f[k++] = d[i + 2]; }
+    for (i = 0; i < f.length; i++) m += f[i]; m /= f.length;
+    var n = 0; for (i = 0; i < f.length; i++){ f[i] -= m; n += f[i] * f[i]; }
+    n = Math.sqrt(n) || 1; for (i = 0; i < f.length; i++) f[i] /= n;
+    return f;
+  }
+  async function embed(){
+    if (st.mode === 'model'){
+      var t = tf.tidy(function(){
+        var e = st.model.infer(video, true);
+        return e.div(e.norm()).flatten();
+      });
+      var d = await t.data(); t.dispose();
+      return d;
+    }
+    return pixelFeat();
+  }
+  function dot(a, b){ var s = 0; for (var i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+
+  /* ---------- Lernen und Raten ---------- */
+  function addExample(i, f){
+    var c = st.classes[i];
+    if (c.ex.length >= MAX_EX) return;
+    c.ex.push(f);
+    updateCount(i);
+    if (c.ex.length % 4 === 1){
+      var cv = document.createElement('canvas'); cv.width = 100; cv.height = 76;
+      cv.getContext('2d').drawImage(video, 0, 0, 100, 76);
+      if (st.facing === 'user') cv.style.transform = 'scaleX(-1)';
+      c.el.thumbs.appendChild(cv);
+      while (c.el.thumbs.children.length > THUMBS) c.el.thumbs.removeChild(c.el.thumbs.firstChild);
+    }
+  }
+
+  function predict(f){
+    var T = st.mode === 'model' ? 25 : 20;
+    var sc = [], used = 0, i, k;
+    for (i = 0; i < st.classes.length; i++){
+      var ex = st.classes[i].ex;
+      if (!ex.length){ sc.push(null); continue; }
+      used++;
+      var sims = ex.map(function(e){ return dot(f, e); }).sort(function(a, b){ return b - a; });
+      var m = Math.min(3, sims.length), s = 0;
+      for (k = 0; k < m; k++) s += sims[k];
+      sc.push(s / m);
+    }
+    var mx = -Infinity;
+    sc.forEach(function(v){ if (v !== null && v > mx) mx = v; });
+    var sum = 0, p = sc.map(function(v){ if (v === null) return 0; var e = Math.exp(T * (v - mx)); sum += e; return e; });
+    p = p.map(function(v){ return sum ? v / sum : 0; });
+    return { p: p, used: used };
+  }
+
+  function render(res){
+    var best = -1, bp = 0;
+    res.p.forEach(function(v, i){
+      var c = st.classes[i], pc100 = Math.round(v * 100);
+      c.el.bar.style.width = pc100 + '%'; c.el.pct.textContent = pc100 + ' %';
+      if (v > bp){ bp = v; best = i; }
+    });
+    var mode = res.used < 2 ? 'few' : (bp >= CONFIDENT ? 'sure' : 'unsure');
+    st.classes.forEach(function(c, i){ c.el.card.classList.toggle('win', mode === 'sure' && i === best); });
+    showResult(best, bp, mode);
+    announce(mode === 'sure' ? best : -1);
+  }
+
+  function showResult(best, bp, mode){
+    var em = $('#resEm'), nm = $('#resName'), nt = $('#resNote');
+    if (mode === 'none' || best < 0){
+      em.textContent = '🤖'; nm.textContent = 'Noch nichts gelernt';
+      nt.textContent = 'Halte einen Knopf gedrückt und zeig der KI Beispiele.';
+      st.classes.forEach(function(c){ c.el.card.classList.remove('win'); });
+      return;
+    }
+    var c = st.classes[best];
+    if (mode === 'few'){
+      em.textContent = '🤔'; nm.textContent = c.name;
+      nt.textContent = 'Mit nur einer Klasse kann die KI nicht unterscheiden. Bring ihr eine zweite bei.';
+    } else if (mode === 'sure'){
+      em.textContent = c.emoji; nm.textContent = c.name;
+      nt.textContent = 'Ich bin mir zu ' + Math.round(bp * 100) + ' % sicher.';
+    } else {
+      em.textContent = '🤔'; nm.textContent = 'Ich bin nicht sicher …';
+      nt.textContent = 'Vielleicht ' + c.name + ' (' + Math.round(bp * 100) + ' %). Zeig der KI mehr Beispiele.';
+    }
+  }
+
+  /* ---------- Ton und Sprache ---------- */
+  function beep(freq){
+    if (!st.sound || !st.audio) return;
+    try {
+      var o = st.audio.createOscillator(), g = st.audio.createGain(), t = st.audio.currentTime;
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      o.connect(g); g.connect(st.audio.destination); o.start(t); o.stop(t + 0.4);
+    } catch (e) {}
+  }
+  function say(text){
+    if (!st.speak || !('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text); u.lang = 'de-DE';
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function announce(winner){
+    if (winner === st.lastWinner){ st.stable++; } else { st.lastWinner = winner; st.stable = 1; }
+    if (winner < 0){ st.announced = -1; return; }
+    if (st.stable >= 3 && winner !== st.announced && Date.now() - st.lastSay > 1200){
+      st.announced = winner; st.lastSay = Date.now();
+      beep(PITCH[winner % PITCH.length]);
+      say(st.classes[winner].name);
+    }
+  }
+
+  /* ---------- Hauptschleife ---------- */
+  async function loop(){
+    for (;;){
+      var delay = 110;
+      try {
+        if (!document.hidden && st.ready && st.camOn && video.videoWidth > 0 && !video.paused){
+          var f = await embed();
+          var anyEx = st.classes.some(function(c){ return c.ex.length; });
+          if (anyEx) render(predict(f));
+          if (st.rec >= 0) { addExample(st.rec, f); delay = 50; }
+        }
+      } catch (e) { console.warn(e); delay = 400; }
+      await sleep(delay);
+    }
+  }
+
+  /* ---------- Bedienung ---------- */
+  $('#btnStart').addEventListener('click', async function(){
+    this.disabled = true;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC && !st.audio){ st.audio = new AC(); }
+      if (st.audio && st.audio.resume) st.audio.resume();
+    } catch (e) {}
+    var ok = await startCamera();
+    if (ok && st.mode === 'init'){ st.mode = 'loading'; loadModel(); }
+  });
+  $('#btnFlip').addEventListener('click', async function(){
+    st.facing = st.facing === 'user' ? 'environment' : 'user';
+    if (st.camOn) await startCamera();
+  });
+  $('#btnSound').addEventListener('click', function(){
+    st.sound = !st.sound;
+    this.setAttribute('aria-pressed', st.sound); this.textContent = '🔔 Ton: ' + (st.sound ? 'an' : 'aus');
+    if (st.sound){ try { if (st.audio && st.audio.resume) st.audio.resume(); } catch (e) {} beep(660); }
+  });
+  $('#btnSpeak').addEventListener('click', function(){
+    st.speak = !st.speak;
+    this.setAttribute('aria-pressed', st.speak); this.textContent = '🗣 Sprache: ' + (st.speak ? 'an' : 'aus');
+    if (st.speak) say('Sprache ist an');
+  });
+  $('#btnReset').addEventListener('click', resetAll);
+  $('#btnAdd').addEventListener('click', addClass);
+  document.addEventListener('visibilitychange', function(){ if (document.hidden) st.rec = -1; });
+
+  for (var n = 0; n < START_CLASSES; n++) addClass();
+  loop();
+
+  // Für Tests im Browser
+  window.__ki = st;
+})();
+</script>
+</body>
+</html>
