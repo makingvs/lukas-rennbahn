@@ -5,14 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#e8eaed">
+<meta name="theme-color" content="#f3f6ee">
 <title>KI-Werkstatt</title>
 <style>
   /* Aufbau und Stil sind dem Werkzeug „Teachable Machine“ von Google nachempfunden (Klassen | Training | Vorschau). */
+  /* Farben aus dem MINT2Go-Logo: Grün #99c328, Pink #e31274, Orange #f29d35, Cyan #3abbea, Gelb #f7be3c, Blaugrau #4e5a7d */
   :root{
-    --bg:#e8eaed; --card:#ffffff; --ink:#202124; --label:#3c4043; --muted:#5f6368; --line:#dadce0;
-    --blue:#1967d2; --blue-d:#0b50c1; --blue-l:#e8f0fe; --blue-m:#8ab4f8; --ok:#188038; --ok-l:#e6f4ea; --warn:#b3261e; --warn-bg:#fce8e6;
-    --shadow:0 1px 2px rgba(60,64,67,.3),0 2px 6px 2px rgba(60,64,67,.12); --r:12px; color-scheme:light;
+    --bg:#f3f6ee; --card:#ffffff; --ink:#27304d; --label:#39425f; --muted:#5b6482; --line:#d9dfe9;
+    --brand:#99c328; --brand-d:#7ea51b; --brand-l:#f4f9e4; --brand-ink:#1f2a44;
+    --pink:#e31274; --orange:#f29d35; --cyan:#3abbea; --yellow:#f7be3c;
+    --blue:#4e5a7d; --blue-d:#37405e; --blue-l:#e8ecf3; --blue-m:#3abbea; --ok:#5d8c10; --ok-l:#f0f7dc; --warn:#b3261e; --warn-bg:#fce8e6;
+    --shadow:0 1px 2px rgba(39,48,77,.28),0 2px 6px 2px rgba(39,48,77,.1); --r:12px; color-scheme:light;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;min-height:100%}
@@ -32,7 +35,7 @@
   /* ===== Startseite ===== */
   .start{padding:26px 16px 48px;max-width:1000px;margin:0 auto}
   .brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin:8px 0 26px;text-align:center}
-  .logo{width:76px;height:76px;border-radius:22px;background:linear-gradient(145deg,#4c8df6,#1967d2);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(25,103,210,.4)}
+  .logo{width:76px;height:76px;border-radius:22px;background:linear-gradient(145deg,#4c8df6,#4e5a7d);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(25,103,210,.4)}
   .logo svg{width:46px;height:46px}
   .start h1{font-size:34px;font-weight:700;color:var(--blue);letter-spacing:-.01em}
   .start .lead{color:var(--muted);max-width:46ch;font-size:16px}
@@ -54,7 +57,7 @@
   .hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;padding:10px 16px 10px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--bg);box-shadow:0 2px 6px rgba(60,64,67,.18)}
   @media (max-height:640px){.hdr{position:static}}
   .hdr .bar{position:relative;display:inline-flex;align-items:center;gap:8px;background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:6px 20px 6px 8px}
-  .hdr .mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#4c8df6,#1967d2);display:grid;place-items:center;color:#fff;flex:none}
+  .hdr .mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#4c8df6,#4e5a7d);display:grid;place-items:center;color:#fff;flex:none}
   .hdr .mark svg{width:24px;height:24px}
   .hdr h1{font-size:22px;color:var(--blue);font-weight:700;letter-spacing:-.01em}
   .hdr .kind{font-size:13px;margin-left:6px;padding:3px 11px;border-radius:99px;background:var(--blue-l);color:var(--blue-d);font-weight:700}
@@ -148,7 +151,7 @@
   .col-train .card{display:grid;gap:12px}
   .hint{font-size:13px;color:var(--muted)}
   .prog{height:10px;border-radius:99px;background:#e8eaed;overflow:hidden}
-  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4c8df6,#1967d2);border-radius:99px;transition:width .1s}
+  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4c8df6,#4e5a7d);border-radius:99px;transition:width .1s}
   .think{display:flex;align-items:center;gap:12px;color:var(--blue-d);font-weight:700}
   .spin{width:30px;height:30px;border-radius:50%;border:4px solid var(--blue-l);border-top-color:var(--blue);animation:rot .9s linear infinite;flex:none}
   @keyframes rot{to{transform:rotate(360deg)}}
@@ -242,6 +245,62 @@
   .loadbox b{font-size:18px;font-weight:700}
   #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;background:#323232;color:#fff;border-radius:10px;padding:12px 18px;max-width:min(92vw,560px);font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
   noscript{display:block;padding:24px}
+
+  /* ===== MINT2Go-Design ===== */
+  body{font-family:"Avenir Next","Avenir","Futura","Nunito","Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+  .m2g{display:block;width:210px;max-width:60vw;height:auto}
+  .m2g-sm{display:block;height:46px;width:auto;flex:none}
+  .brand .sub{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:700}
+  .start h1,.hdr h1{color:var(--ink)}
+  .hdr h1 em,.start h1 em{font-style:normal;color:var(--brand-d)}
+  .hdr .kind{background:var(--brand-l);color:var(--ink);box-shadow:inset 0 0 0 1px var(--brand)}
+  .hdr .bar{padding:6px 20px 6px 10px}
+  .type .pic{background:linear-gradient(160deg,#e6f7fd,#c5ebf8)}
+  .type.pose .pic{background:linear-gradient(160deg,#fff3e0,#fddcab)}
+  .type.audio .pic{background:linear-gradient(160deg,#eef0f4,#dfe3ea)}
+  .type .go{color:var(--blue-d)}
+  .legal a,.note a,.hint a{color:var(--blue-d);font-weight:700}
+  /* Knöpfe: Grün mit dunkler Schrift (gut lesbar), Nebenknöpfe in Blaugrau */
+  .btn{background:var(--brand);color:var(--brand-ink)}
+  .btn:hover:not(:disabled){background:var(--brand-d)}
+  .btn:disabled{background:#eceff3;color:#98a0b3}
+  .btn.sec{background:var(--blue-l);color:var(--blue-d)}
+  .btn.sec:hover:not(:disabled){background:#d9dfeb}
+  .btn.stop{background:var(--warn-bg);color:var(--warn)}
+  .linkbtn{color:var(--blue-d)}
+  .linkbtn:disabled{color:#98a0b3}
+  /* Klassenfarben: Fläche (--c), dunkle Variante für Text (--cd), Schriftfarbe auf der Fläche (--cf) */
+  .cls-name{color:var(--ink)}
+  .srcbtn{color:var(--cd,var(--blue-d))}
+  .hold{color:var(--cf,#fff)}
+  .hold .dot{background:var(--cf,#fff)}
+  .hold.on{box-shadow:inset 0 0 0 4px rgba(255,255,255,.9),0 0 0 5px var(--cl)}
+  .tb{color:var(--cf,#fff)}
+  .tb.yes{background:var(--brand);color:var(--brand-ink)}
+  .stepper li.act{box-shadow:0 0 0 2px var(--brand-d),0 2px 8px rgba(126,165,27,.35)}
+  .stepper li.act b{background:var(--blue)}
+  .stepper li.done b{background:var(--brand-d)}
+  .prog i{background:linear-gradient(90deg,var(--cyan),var(--brand))}
+  .spin{border-color:var(--blue-l);border-top-color:var(--brand-d)}
+  .dots i{background:var(--brand-d)}
+  .mode:hover{border-color:var(--cyan)}
+  .mode[aria-pressed="true"]{border-color:var(--brand-d);background:var(--brand-l)}
+  .mode[aria-pressed="true"] b{color:var(--ink)}
+  .seg button[aria-pressed="true"]{color:var(--ink);box-shadow:0 1px 3px rgba(39,48,77,.3)}
+  .chip[aria-pressed="true"]{border-color:var(--brand-d);background:var(--brand-l);color:var(--ink)}
+  .add:hover{border-color:var(--brand-d);color:var(--ink)}
+  .adv summary{color:var(--ink)}
+  .row.top .nm{color:var(--ink)}
+  .verdict .t2{color:var(--ink)}
+  .set input[type=checkbox]{accent-color:var(--brand-d)}
+  .scratch{display:grid;gap:8px;background:var(--brand-l);border-radius:12px;padding:12px 14px;box-shadow:inset 0 0 0 1px #d9e9ae}
+  .scratch b{font-size:15px}
+  .scratch .row2{display:flex;gap:8px;flex-wrap:wrap}
+  .scratch .row2 .btn{flex:1 1 140px;min-height:46px;font-size:14px;padding:8px 10px}
+  /* Der Aufnahme-Knopf nimmt die Farbe seiner Klasse (steht nach .btn, damit er nicht grün wird) */
+  .btn.hold,.btn.hold:hover:not(:disabled){background:var(--c);color:var(--cf,#fff)}
+  .btn.hold:hover:not(:disabled){filter:brightness(.93)}
+  .btn.hold.on,.btn.hold.on:hover:not(:disabled){filter:none}
 </style>
 </head>
 <body>
@@ -251,26 +310,27 @@
 <!-- ============ Startseite ============ -->
 <main class="start" id="start">
   <div class="brand">
-    <div class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="14" width="30" height="24" rx="8" fill="#fff"/><circle cx="19" cy="26" r="4.5" fill="#1967d2"/><circle cx="29" cy="26" r="4.5" fill="#1967d2"/><circle cx="20.2" cy="25" r="1.4" fill="#fff"/><circle cx="30.2" cy="25" r="1.4" fill="#fff"/><path d="M19 33.5c3 2 7 2 10 0" stroke="#1967d2" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M24 14V8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="24" cy="6.5" r="3" fill="#fbbc04"/><rect x="4" y="21" width="4" height="9" rx="2" fill="#fff"/><rect x="40" y="21" width="4" height="9" rx="2" fill="#fff"/></svg></div>
-    <h1>Neues Projekt</h1>
+    <img class="m2g" src="assets/mint2go-logo.png" width="379" height="320" alt="MINT2Go: MINT erleben">
+    <h1>KI-<em>Werkstatt</em></h1>
+    <span class="sub">Neues Projekt</span>
     <p class="lead">Bring einem Computer bei, Bilder oder Körperhaltungen zu erkennen. Du brauchst dafür keinen Code.</p>
   </div>
   <div class="types">
     <button class="type" id="pickImage" type="button">
       <div class="pic"><svg viewBox="0 0 160 110" aria-hidden="true">
-        <path d="M10 28V16a6 6 0 0 1 6-6h12M132 10h12a6 6 0 0 1 6 6v12M150 82v12a6 6 0 0 1-6 6h-12M28 100H16a6 6 0 0 1-6-6V82" fill="none" stroke="#8ab4f8" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M10 28V16a6 6 0 0 1 6-6h12M132 10h12a6 6 0 0 1 6 6v12M150 82v12a6 6 0 0 1-6 6h-12M28 100H16a6 6 0 0 1-6-6V82" fill="none" stroke="#3abbea" stroke-width="3.5" stroke-linecap="round"/>
         <rect x="22" y="20" width="116" height="70" rx="9" fill="#fff"/>
-        <circle cx="52" cy="42" r="9" fill="#fbbc04"/>
-        <path d="M22 82l34-30 22 20 18-14 42 28v4a5 5 0 0 1-5 5H27a5 5 0 0 1-5-5z" fill="#34a853"/>
-        <path d="M96 58l42 28v4a5 5 0 0 1-5 5H112z" fill="#188038"/>
+        <circle cx="52" cy="42" r="9" fill="#f7be3c"/>
+        <path d="M22 82l34-30 22 20 18-14 42 28v4a5 5 0 0 1-5 5H27a5 5 0 0 1-5-5z" fill="#99c328"/>
+        <path d="M96 58l42 28v4a5 5 0 0 1-5 5H112z" fill="#7ea51b"/>
       </svg></div>
       <div class="tx"><h2>Bildprojekt</h2><p>Trainiere das Modell mit Bildern aus deiner Kamera oder aus Dateien.</p><span class="go">Starten →</span></div>
     </button>
     <button class="type pose" id="pickPose" type="button">
       <div class="pic"><svg viewBox="0 0 160 110" aria-hidden="true">
-        <g stroke="#f29900" stroke-width="5" stroke-linecap="round" fill="none"><path d="M80 36v32M80 44L60 34 46 20M80 44l20-10 14-14M80 68L68 88l-6 18M80 68l12 20 6 18"/></g>
-        <circle cx="80" cy="24" r="11" fill="#fff" stroke="#f29900" stroke-width="4"/>
-        <g fill="#fff" stroke="#1967d2" stroke-width="3"><circle cx="80" cy="44" r="5"/><circle cx="60" cy="34" r="5"/><circle cx="46" cy="20" r="5"/><circle cx="100" cy="34" r="5"/><circle cx="114" cy="20" r="5"/><circle cx="80" cy="68" r="5"/><circle cx="68" cy="88" r="5"/><circle cx="62" cy="104" r="5"/><circle cx="92" cy="88" r="5"/><circle cx="98" cy="104" r="5"/></g>
+        <g stroke="#f29d35" stroke-width="5" stroke-linecap="round" fill="none"><path d="M80 36v32M80 44L60 34 46 20M80 44l20-10 14-14M80 68L68 88l-6 18M80 68l12 20 6 18"/></g>
+        <circle cx="80" cy="24" r="11" fill="#fff" stroke="#f29d35" stroke-width="4"/>
+        <g fill="#fff" stroke="#e31274" stroke-width="3"><circle cx="80" cy="44" r="5"/><circle cx="60" cy="34" r="5"/><circle cx="46" cy="20" r="5"/><circle cx="100" cy="34" r="5"/><circle cx="114" cy="20" r="5"/><circle cx="80" cy="68" r="5"/><circle cx="68" cy="88" r="5"/><circle cx="62" cy="104" r="5"/><circle cx="92" cy="88" r="5"/><circle cx="98" cy="104" r="5"/></g>
       </svg></div>
       <div class="tx"><h2>Posenprojekt</h2><p>Trainiere das Modell mit Körperhaltungen: Arme, Beine und Kopf.</p><span class="go">Starten →</span></div>
     </button>
@@ -279,7 +339,8 @@
       <div class="tx"><h2>Audioprojekt</h2><p>Gibt es in dieser Werkstatt noch nicht. Das Original kann es.</p></div>
     </button>
   </div>
-  <p class="legal">Nachempfunden dem Werkzeug „Teachable Machine“ von Google, aber kein Google-Angebot. Alles läuft auf deinem Gerät, es werden keine Bilder verschickt.</p>
+  <p class="legal">Du möchtest deine KI in Scratch nutzen? <a href="scratch.html">So geht's mit Scratch (TurboWarp)</a></p>
+  <p class="legal" style="margin-top:10px">MINT2Go · MINT erleben. Nachempfunden dem Werkzeug „Teachable Machine“ von Google, aber kein Google-Angebot. Alles läuft auf deinem Gerät, es werden keine Bilder verschickt.</p>
 </main>
 
 <!-- ============ Projekt ============ -->
@@ -287,8 +348,8 @@
   <header class="hdr">
     <div class="bar">
       <button class="iconbtn" id="btnMenu" type="button" aria-label="Menü" aria-haspopup="true"></button>
-      <span class="mark"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="14" width="30" height="24" rx="8" fill="#fff"/><circle cx="19" cy="26" r="4.5" fill="#1967d2"/><circle cx="29" cy="26" r="4.5" fill="#1967d2"/><path d="M24 14V8" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="6.5" r="3.2" fill="#fbbc04"/></svg></span>
-      <h1>KI-Werkstatt</h1><span class="kind" id="kind"></span>
+      <img class="m2g-sm" src="assets/mint2go-marke.png" width="379" height="260" alt="MINT2Go">
+      <h1>KI-<em>Werkstatt</em></h1><span class="kind" id="kind"></span>
       <div class="dd" id="mainMenu" hidden>
         <button type="button" data-a="new">Neues Projekt</button>
         <button type="button" data-a="help">Hilfe und Tipps</button>
@@ -323,7 +384,7 @@
             <p class="t2" id="rLoss">Fehler: –</p>
           </div>
           <canvas id="rChart" class="rchart" hidden></canvas>
-          <div class="legend" id="rLegend" hidden><span><i style="background:#1967d2"></i>Üben</span><span><i style="background:#e8710a"></i>Test</span></div>
+          <div class="legend" id="rLegend" hidden><span><i style="background:#4e5a7d"></i>Üben</span><span><i style="background:#e31274"></i>Test</span></div>
           <button class="btn" id="rOne" type="button" disabled>Eine Runde üben</button>
           <button class="btn sec" id="rTen" type="button" disabled>10 Runden üben</button>
           <p class="hint" id="rHint"></p>
@@ -348,7 +409,7 @@
           <button class="btn stop" id="btnStop" type="button" style="margin-top:8px;width:100%">Training beenden</button>
         </div>
         <div class="done" id="doneBox" hidden>
-          <div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="26" fill="none" stroke="#ceead6" stroke-width="8"/><circle id="ringArc" cx="32" cy="32" r="26" fill="none" stroke="#188038" stroke-width="8" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="163.4"/></svg><b id="ringTxt">0 %</b></div>
+          <div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="26" fill="none" stroke="#dfeab9" stroke-width="8"/><circle id="ringArc" cx="32" cy="32" r="26" fill="none" stroke="#5d8c10" stroke-width="8" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="163.4"/></svg><b id="ringTxt">0 %</b></div>
           <div><p class="t1">Fertig geübt!</p><p class="t2" id="doneTxt"></p></div>
         </div>
         <p class="hint" id="trainHint"></p>
@@ -412,6 +473,16 @@
             <button class="chip" id="chSound" type="button" aria-pressed="false">Ton: aus</button>
             <button class="chip" id="chSpeak" type="button" aria-pressed="false">Sprache: aus</button>
           </div>
+          <div class="scratch" id="scratchBox">
+            <b>In Scratch nutzen</b>
+            <p class="note">Schicke deine KI an Scratch (TurboWarp) und baue damit eigene Spiele. Die <a href="scratch.html" target="_blank" rel="noopener">Anleitung</a> zeigt, wie.</p>
+            <div class="row2">
+              <button class="btn" id="sSend" type="button" hidden>An Scratch senden</button>
+              <button class="btn" id="sCopy" type="button">Modell kopieren</button>
+              <button class="btn sec" id="sFile" type="button">Als Datei speichern</button>
+            </div>
+            <p class="note" id="sNote"></p>
+          </div>
         </div>
       </div>
     </section>
@@ -437,9 +508,15 @@
   var MAX_EX = 300, MIN_EX = 2, DEFAULTS = { epochs: 50, batch: 16, lr: 0.001 };
   var MIN_PRESS_MS = 700;   // Jeder Druck auf den Aufnahme-Knopf nimmt mindestens so lange auf, auch ein kurzes Antippen
   var ROUND_LR = 0.0015, ROUND_BATCH = 8;   // Beim Training Runde für Runde: etwas größere Schritte, damit man den Fortschritt sieht
+  // Klassenfarben aus dem MINT2Go-Logo: c = Fläche, t = helle Tönung, d = dunkle Variante für Text, f = Schriftfarbe auf der Fläche
   var PAL = [
-    { c: '#1967d2', t: '#e8f0fe' }, { c: '#c25e00', t: '#fff1e0' }, { c: '#188038', t: '#e6f4ea' },
-    { c: '#8430ce', t: '#f3e8fd' }, { c: '#c5221f', t: '#fce8e6' }, { c: '#0b7285', t: '#e3f6f9' }, { c: '#c2185b', t: '#fde7f1' }
+    { c: '#3abbea', t: '#e3f5fc', d: '#0a6f94', f: '#1f2a44' },
+    { c: '#f29d35', t: '#fef0dc', d: '#8f5200', f: '#1f2a44' },
+    { c: '#e31274', t: '#fce4ef', d: '#b00c5e', f: '#ffffff' },
+    { c: '#99c328', t: '#f0f7dc', d: '#4f7400', f: '#1f2a44' },
+    { c: '#4e5a7d', t: '#e8ecf3', d: '#37405e', f: '#ffffff' },
+    { c: '#f7be3c', t: '#fef5db', d: '#7d5a00', f: '#1f2a44' },
+    { c: '#8db104', t: '#eef5d6', d: '#476300', f: '#1f2a44' }
   ];
   var LIMBS = [[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16],[0,1],[0,2],[1,3],[2,4]];
   var IC = {
@@ -633,7 +710,7 @@
     var g = cv.getContext('2d'); g.clearRect(0, 0, W, H);
     if (!pose) return;
     var k = pose.keypoints, sx = W / 257, sy = H / 257, i;
-    g.lineWidth = 3; g.lineCap = 'round'; g.strokeStyle = 'rgba(138,180,248,.95)';
+    g.lineWidth = 3; g.lineCap = 'round'; g.strokeStyle = 'rgba(58,187,234,.98)';
     LIMBS.forEach(function(l){
       var a = k[l[0]], b = k[l[1]];
       if (a.score >= 0.3 && b.score >= 0.3){ g.beginPath(); g.moveTo(a.position.x * sx, a.position.y * sy); g.lineTo(b.position.x * sx, b.position.y * sy); g.stroke(); }
@@ -650,7 +727,7 @@
   }
   function addClass(){
     var p = PAL[S.classes.length % PAL.length];
-    var c = { id: S.nextId++, name: 'Klasse ' + (S.classes.length + 1), off: false, ex: [], color: p.c, tint: p.t, ui: {} };
+    var c = { id: S.nextId++, name: 'Klasse ' + (S.classes.length + 1), off: false, ex: [], color: p.c, tint: p.t, dark: p.d, fg: p.f, ui: {} };
     S.classes.push(c); buildCard(c); markDirty();
     return c;
   }
@@ -658,6 +735,7 @@
     var card = document.createElement('section');
     card.className = 'card cls';
     card.style.setProperty('--c', c.color); card.style.setProperty('--cl', c.tint);
+    card.style.setProperty('--cd', c.dark); card.style.setProperty('--cf', c.fg);
     card.innerHTML =
       '<div class="cls-h">' +
         '<span class="cls-dot"></span>' +
@@ -1110,7 +1188,7 @@
     var box = $('#tBtns'); box.innerHTML = '';
     S.classOrder.forEach(function(id){
       var c = byId(id); if (!c) return;
-      var b = document.createElement('button'); b.type = 'button'; b.className = 'tb'; b.style.setProperty('--c', c.color);
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'tb'; b.style.setProperty('--c', c.color); b.style.setProperty('--cf', c.fg);
       b.innerHTML = '<small>Das ist</small><span></span>'; $('span', b).textContent = c.name;
       b.addEventListener('click', function(){ teach(id); });
       box.appendChild(b);
@@ -1158,18 +1236,76 @@
     m.add(tf.layers.dense({ units: 100, activation: 'relu', inputShape: [dim] }));
     m.add(tf.layers.dense({ units: C, activation: 'softmax' }));
     m.compile({ optimizer: tf.train.adam(ROUND_LR), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
-    S.rd = { model: m, xs: xs, ys: ys, val: val, norm: norm, mu: mu, sigma: sigma, order: act.map(function(c){ return c.id; }),
+    return { model: m, xs: xs, ys: ys, val: val, norm: norm, mu: mu, sigma: sigma, order: act.map(function(c){ return c.id; }),
       test: { X: Xte.map(norm), Y: Yte }, epoch: 0, hist: { acc: [], vacc: [], loss: [], vloss: [] } };
+  }
+  function disposeRd(rd){
+    try { rd.xs.dispose(); rd.ys.dispose(); if (rd.val){ rd.val[0].dispose(); rd.val[1].dispose(); } rd.model.dispose(); } catch (e) {}
   }
   function disposeRounds(){
     var rd = S.rd; if (!rd) return;
-    try { rd.xs.dispose(); rd.ys.dispose(); if (rd.val){ rd.val[0].dispose(); rd.val[1].dispose(); } rd.model.dispose(); } catch (e) {}
+    disposeRd(rd);
     if (S.head === rd.model){ S.head = null; }
     S.rd = null; S.rdStale = false;
   }
+
+  /* ================= Export für Scratch ================= */
+  // Das Modell (kleines Netz mit zwei Schichten, Normalisierung, Klassennamen) wird als Text weitergegeben.
+  // Die Scratch-Erweiterung (scratch/ki-werkstatt-erweiterung.js) liest es wieder ein und erkennt damit live.
+  function f32b64(a){
+    var u = new Uint8Array(a.buffer, a.byteOffset, a.byteLength), s = '', i;
+    for (i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+  async function buildExport(){
+    var src, tmp = null;
+    if (S.training){ toast('Warte, bis die KI fertig geübt hat.'); return null; }
+    if (!S.manual && S.trained && S.head){
+      src = { head: S.head, mu: S.mu, sigma: S.sigma, order: S.classOrder };
+    } else if (!trainProblem()){
+      toast('Die KI übt kurz für den Export …', 3500);
+      tmp = initRounds();
+      await tmp.model.fit(tmp.xs, tmp.ys, { epochs: 60, batchSize: ROUND_BATCH, shuffle: true });
+      src = { head: tmp.model, mu: tmp.mu, sigma: tmp.sigma, order: tmp.order };
+    } else { toast(trainProblem() || 'Trainiere zuerst die KI.'); return null; }
+    var ws = src.head.getWeights(), data = [], i;
+    for (i = 0; i < ws.length; i++) data.push(await ws[i].data());
+    if (tmp) disposeRd(tmp);
+    return {
+      kind: 'ki-werkstatt-modell', version: 1, art: S.type, mode: S.mode, alpha: ALPHA, dim: S.dim, units: 100,
+      klassen: src.order.map(function(id){ var c = byId(id); return c ? c.name : '?'; }),
+      mu: f32b64(src.mu), sigma: src.sigma, w1: f32b64(data[0]), b1: f32b64(data[1]), w2: f32b64(data[2]), b2: f32b64(data[3])
+    };
+  }
+  async function exportCopy(){
+    var p = await buildExport(); if (!p) return;
+    var txt = JSON.stringify(p), ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    if (!ok){
+      var ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+      document.body.appendChild(ta); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} ta.remove();
+    }
+    setText($('#sNote'), ok ? 'Kopiert! Wechsle zu Scratch und tippe auf den Block „Modell aus Zwischenablage einfügen“.' : 'Das Kopieren hat nicht geklappt. Nimm „Als Datei speichern“.');
+    toast(ok ? '✓ Modell kopiert' : 'Kopieren nicht möglich', 3000);
+  }
+  async function exportFile(){
+    var p = await buildExport(); if (!p) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(p)], { type: 'application/json' }));
+    a.download = 'ki-werkstatt-modell.json'; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    setText($('#sNote'), 'Gespeichert als „ki-werkstatt-modell.json“. In Scratch: Block „Modell aus Datei laden“.');
+  }
+  async function exportSend(){
+    var p = await buildExport(); if (!p) return;
+    if (window.opener && !window.opener.closed){
+      window.opener.postMessage(p, '*');
+      setText($('#sNote'), 'Gesendet! Wechsle zurück zu Scratch.'); toast('✓ An Scratch gesendet', 3000);
+    } else setText($('#sNote'), 'Es gibt keine Verbindung zu Scratch. Nimm „Modell kopieren“.');
+  }
   async function roundStep(n){
     if (S.training || !S.rounds || trainProblem()) return;
-    if (!S.rd) initRounds();
+    if (!S.rd) S.rd = initRounds();
     var rd = S.rd; S.rdNote = ''; S.training = true; refreshRounds();
     try {
       await rd.model.fit(rd.xs, rd.ys, {
@@ -1198,7 +1334,7 @@
     setText($('#rAcc'), n ? 'Beim Üben richtig: ' + Math.round(h.acc[n - 1] * 100) + ' %' + (h.vacc.length ? ' · Test: ' + Math.round(h.vacc[h.vacc.length - 1] * 100) + ' %' : '') : 'Genauigkeit: –');
     setText($('#rLoss'), n ? 'Fehler: ' + h.loss[n - 1].toFixed(2) : 'Fehler: –');
     var cv = $('#rChart'); cv.hidden = !n; $('#rLegend').hidden = !n;
-    if (n) lineChart(cv, [{ d: h.acc, c: '#1967d2' }, { d: h.vacc, c: '#e8710a' }], 'Genauigkeit pro Runde');
+    if (n) lineChart(cv, [{ d: h.acc, c: '#4e5a7d' }, { d: h.vacc, c: '#e31274' }], 'Genauigkeit pro Runde');
     setText($('#rHint'), prob || S.rdNote || (busy ? 'Die KI übt …' : (rd ? 'Tippe noch einmal, bis die KI sicher ist.' : 'Tippe auf „Eine Runde üben“.')));
   }
 
@@ -1334,14 +1470,14 @@
     openDialog(
       '<div class="top"><h2>Details</h2><button class="iconbtn" type="button" data-close aria-label="Schließen">' + icon('close') + '</button></div>' +
       '<p class="note">Die KI teilt deine Beispiele in zwei Gruppen: etwa 85 % zum Üben („Training“) und etwa 15 % zum Prüfen („Test“). Die Testbeispiele sieht sie beim Üben nie.</p>' +
-      '<div class="legend"><span><i style="background:#1967d2"></i>Training</span><span><i style="background:#e8710a"></i>Test</span></div>' +
+      '<div class="legend"><span><i style="background:#4e5a7d"></i>Training</span><span><i style="background:#e31274"></i>Test</span></div>' +
       '<div class="charts"><canvas id="chAcc"></canvas><canvas id="chLoss"></canvas></div>' +
       '<h3>Genauigkeit nach Klasse</h3><div><button class="btn sec" type="button" id="btnAccCls">Genauigkeit berechnen</button></div><div id="accOut"></div>' +
       '<h3>Wahrheitsmatrix</h3><div><button class="btn sec" type="button" id="btnConf">Wahrheitsmatrix berechnen</button></div><div id="confOut" style="overflow:auto"></div>' +
       '<p class="note">Je höher die Genauigkeit, desto öfter hat die KI richtig geraten. Beim Verlust ist niedriger besser. Fällt die Test-Genauigkeit viel tiefer als die Trainings-Genauigkeit, hat die KI die Beispiele eher auswendig gelernt.</p>');
     var H = S.hist;
-    lineChart($('#chAcc'), [{ d: H.acc, c: '#1967d2' }, { d: H.vacc, c: '#e8710a' }], 'Genauigkeit pro Epoche');
-    lineChart($('#chLoss'), [{ d: H.loss, c: '#1967d2' }, { d: H.vloss, c: '#e8710a' }], 'Verlust pro Epoche');
+    lineChart($('#chAcc'), [{ d: H.acc, c: '#4e5a7d' }, { d: H.vacc, c: '#e31274' }], 'Genauigkeit pro Epoche');
+    lineChart($('#chLoss'), [{ d: H.loss, c: '#4e5a7d' }, { d: H.vloss, c: '#e31274' }], 'Verlust pro Epoche');
     function testPreds(){
       var X = S.test.X, Y = S.test.Y; if (!X.length) return Promise.resolve(null);
       var o = new Float32Array(X.length * S.dim); X.forEach(function(f, i){ o.set(f, i * S.dim); });
@@ -1450,6 +1586,10 @@
   $('#rTen').addEventListener('click', function(){ roundStep(10); });
   $('#rReset').addEventListener('click', function(){ if (S.training) return; disposeRounds(); S.trained = false; S.rdNote = 'Die KI fängt von vorn an.'; renderPreview(); refreshTrain(); });
   $('#rDetails').addEventListener('click', openDetails);
+  $('#sCopy').addEventListener('click', exportCopy);
+  $('#sFile').addEventListener('click', exportFile);
+  $('#sSend').addEventListener('click', exportSend);
+  if (window.opener) $('#sSend').hidden = false;
   $('#tYes').addEventListener('click', function(){ if (S.lastGuess >= 0) teach(S.lastGuess); else toast('Die KI hat noch nichts geraten. Sag ihr mit „Das ist …“, was du zeigst.', 3500); });
   $('#tReset').addEventListener('click', function(){ S.teachHist = []; renderTeachStats(); });
   $('#advReset').addEventListener('click', resetAdv);
@@ -1472,7 +1612,7 @@
   setInterval(updateRecUI, 150);
   loop();
 
-  window.__ki = { S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec, setMode: setMode, roundStep: roundStep, teach: teach, knnProbs: knnProbs };
+  window.__ki = { S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec, setMode: setMode, roundStep: roundStep, teach: teach, knnProbs: knnProbs, buildExport: buildExport, poseFeat: poseFeat, predict: predict };
 })();
 </script>
 </body>

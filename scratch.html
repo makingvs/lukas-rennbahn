@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3f6ee">
+<title>KI-Werkstatt in Scratch</title>
+<style>
+  :root{
+    --bg:#f3f6ee; --card:#fff; --ink:#27304d; --label:#39425f; --muted:#5b6482; --line:#d9dfe9;
+    --brand:#99c328; --brand-d:#7ea51b; --brand-l:#f4f9e4; --brand-ink:#1f2a44;
+    --pink:#e31274; --orange:#f29d35; --cyan:#3abbea; --yellow:#f7be3c; --slate:#4e5a7d; --slate-l:#e8ecf3;
+    --warn:#8f3a00; --warn-bg:#fff1e0;
+    --shadow:0 1px 2px rgba(39,48,77,.28),0 2px 6px 2px rgba(39,48,77,.1);
+    color-scheme:light;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:17px/1.55 "Avenir Next","Avenir","Futura","Nunito","Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  [hidden]{display:none!important}
+  h1,h2,h3,p{margin:0}
+  a{color:var(--slate);font-weight:700}
+  .wrap{max-width:900px;margin:0 auto;padding:0 18px 56px}
+  header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:18px 0 10px}
+  header.top img{height:64px;width:auto;display:block}
+  header.top .nav{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+  .pill{display:inline-block;text-decoration:none;border-radius:99px;padding:9px 16px;font-weight:700;font-size:15px;background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .pill:hover{background:var(--brand-l)}
+  h1{font-size:clamp(30px,6vw,44px);line-height:1.1;margin:14px 0 8px;letter-spacing:-.01em}
+  h1 em{font-style:normal;color:var(--brand-d)}
+  .lead{font-size:19px;color:var(--label);max-width:60ch}
+  .band{display:flex;height:8px;border-radius:99px;overflow:hidden;margin:20px 0 6px}
+  .band i{flex:1}
+  .note{margin-top:20px;background:var(--warn-bg);border-radius:14px;padding:14px 18px;box-shadow:inset 0 0 0 1px #f3d2a8}
+  .note b{color:var(--warn)}
+  .steps{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:16px;counter-reset:s}
+  .step{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px 74px;position:relative;counter-increment:s}
+  .step::before{content:counter(s);position:absolute;left:18px;top:18px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+    font-weight:800;font-size:20px;background:var(--c,var(--brand));color:var(--cf,var(--brand-ink))}
+  .step:nth-child(1){--c:#3abbea;--cf:#1f2a44}
+  .step:nth-child(2){--c:#f29d35;--cf:#1f2a44}
+  .step:nth-child(3){--c:#e31274;--cf:#fff}
+  .step:nth-child(4){--c:#99c328;--cf:#1f2a44}
+  .step h2{font-size:22px;margin-bottom:6px}
+  .step p{color:var(--label)}
+  .step ol,.step ul{margin:8px 0 0;padding-left:1.25em;display:grid;gap:5px;color:var(--label)}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 4px}
+  .btn{border:0;border-radius:12px;padding:13px 20px;min-height:50px;font:inherit;font-weight:800;font-size:16px;background:var(--brand);color:var(--brand-ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+  .btn:hover{background:var(--brand-d)}
+  .btn.sec{background:var(--slate-l);color:var(--ink)}
+  .btn.sec:hover{background:#d9dfeb}
+  .ok{color:#476300;font-weight:800;min-height:1.4em}
+  h2.sec{font-size:26px;margin:40px 0 12px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);font-size:16px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--slate-l);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  tr:last-child td{border-bottom:0}
+  td:first-child{font-weight:700;white-space:nowrap}
+  .blk{display:inline-block;background:var(--brand);color:var(--brand-ink);border-radius:8px;padding:2px 10px;font-weight:700;font-size:15px}
+  .hat{border-radius:16px 16px 8px 8px}
+  .ex{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .ex .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 18px;border-top:6px solid var(--c)}
+  .ex h3{font-size:19px;margin-bottom:6px}
+  .ex .script{display:grid;gap:4px;margin-top:8px}
+  .ex .script span{display:block;border-radius:8px;padding:5px 12px;font-weight:700;font-size:15px;background:#eef0f5;color:var(--ink)}
+  .ex .script span.h{background:var(--brand);color:var(--brand-ink);border-radius:14px 14px 8px 8px}
+  .ex .script span.m{background:#c8b1f0;color:#2a1a4d}
+  details{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:4px 18px;margin-bottom:10px}
+  summary{cursor:pointer;font-weight:800;padding:12px 0;min-height:48px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"＋";float:right;color:var(--muted)}
+  details[open] summary::after{content:"－"}
+  details p{padding:0 0 14px;color:var(--label)}
+  code{background:#eef0f5;border-radius:6px;padding:1px 6px;font-size:.92em}
+  textarea{width:100%;min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px}
+  footer{margin-top:44px;color:var(--muted);font-size:14px;text-align:center}
+  :focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <img src="assets/mint2go-logo.png" width="379" height="320" alt="MINT2Go: MINT erleben">
+    <nav class="nav"><a class="pill" href="ki-werkstatt.html">← Zur KI-Werkstatt</a></nav>
+  </header>
+
+  <h1>Deine KI in <em>Scratch</em></h1>
+  <p class="lead">Du hast in der KI-Werkstatt eine KI trainiert. Mit der Erweiterung „KI-Werkstatt“ erkennt Scratch damit live, was die Kamera sieht, und du baust Spiele und Geschichten, die darauf reagieren.</p>
+  <div class="band" aria-hidden="true"><i style="background:#99c328"></i><i style="background:#f7be3c"></i><i style="background:#f29d35"></i><i style="background:#e31274"></i><i style="background:#3abbea"></i></div>
+
+  <div class="note"><b>Wichtig:</b> Das geht in <b>TurboWarp</b> (turbowarp.org). Das ist ein Scratch-Editor mit denselben Blöcken, der Scratch-Projekte öffnet und speichert. Auf scratch.mit.edu sind eigene Erweiterungen nicht erlaubt. Projekte mit dieser Erweiterung laufen deshalb nur in TurboWarp und lassen sich nicht auf die Scratch-Webseite hochladen.</div>
+
+  <ol class="steps">
+    <li class="step">
+      <h2>TurboWarp öffnen</h2>
+      <p>Öffne den Editor im Browser (Safari am iPad geht).</p>
+      <div class="btns"><a class="btn" href="https://turbowarp.org/editor" target="_blank" rel="noopener">TurboWarp öffnen</a></div>
+    </li>
+    <li class="step">
+      <h2>Erweiterung hinzufügen</h2>
+      <p>Der Code der Erweiterung wird eingefügt. Tippe zuerst hier auf „Code kopieren“.</p>
+      <div class="btns">
+        <button class="btn" id="copyCode" type="button">Code kopieren</button>
+        <a class="btn sec" href="scratch/ki-werkstatt-erweiterung.js" download="ki-werkstatt-erweiterung.js">Als Datei laden</a>
+      </div>
+      <p class="ok" id="copyNote" role="status"></p>
+      <ol>
+        <li>In TurboWarp links unten auf das <b>Erweiterungs-Symbol</b> tippen (blaues Feld mit Pluszeichen).</li>
+        <li>Ganz nach unten scrollen und <b>„Eigene Erweiterung“</b> (Custom Extension) wählen.</li>
+        <li>Den Reiter <b>„Text“</b> wählen und den kopierten Code einfügen. Bei einer Datei den Reiter „Datei“ nehmen.</li>
+        <li><b>Wichtig:</b> Den Haken bei <b>„Erweiterung ohne Sandbox ausführen“</b> (Run extension without sandbox) setzen. Ohne ihn kann die Erweiterung die Kamera nicht benutzen.</li>
+        <li>Auf <b>„Laden“</b> tippen. Links erscheint die grüne Kategorie <b>„KI-Werkstatt“</b>.</li>
+      </ol>
+    </li>
+    <li class="step">
+      <h2>Das Modell holen</h2>
+      <p>Trainiere in der KI-Werkstatt deine KI. Dann gibt es drei Wege nach Scratch:</p>
+      <ul>
+        <li><b>Kopieren (am einfachsten):</b> In der KI-Werkstatt auf <b>„Modell kopieren“</b> tippen. In Scratch den Block <span class="blk">Modell aus Zwischenablage einfügen</span> anklicken. Beim ersten Mal fragt Safari, ob eingefügt werden darf: „Einfügen“ wählen.</li>
+        <li><b>Senden:</b> In Scratch den Block <span class="blk">KI-Werkstatt öffnen (Modell holen)</span> anklicken. In dem neuen Fenster trainieren und auf <b>„An Scratch senden“</b> tippen.</li>
+        <li><b>Datei:</b> In der KI-Werkstatt <b>„Als Datei speichern“</b>. In Scratch den Block <span class="blk">Modell aus Datei laden</span> anklicken.</li>
+      </ul>
+      <p style="margin-top:8px">Du siehst eine Meldung „Modell geladen“ mit den Namen deiner Klassen. TurboWarp merkt sich das Modell, auch nach dem Neuladen.</p>
+    </li>
+    <li class="step">
+      <h2>Kamera anschalten und loslegen</h2>
+      <p>Klicke den Block <span class="blk">Kamera an</span> an und erlaube die Kamera. Unten rechts erscheint das Kamerabild mit dem Ergebnis. Beim Posenprojekt siehst du auch die Punkte und Linien an dir. Jetzt kannst du die Blöcke unten benutzen.</p>
+    </li>
+  </ol>
+
+  <h2 class="sec">Die Blöcke</h2>
+  <table>
+    <thead><tr><th>Block</th><th>Was er macht</th></tr></thead>
+    <tbody>
+      <tr><td><span class="blk hat">Wenn KI [Klasse] erkennt</span></td><td>Startet, sobald die KI diese Klasse erkennt (und sich sicher genug ist).</td></tr>
+      <tr><td><span class="blk">KI erkennt [Klasse]?</span></td><td>Ja oder nein. Gut für „falls … dann …“.</td></tr>
+      <tr><td><span class="blk">erkannte Klasse</span></td><td>Der Name der Klasse, die die KI gerade sieht. Leer, wenn sie sich nicht sicher ist.</td></tr>
+      <tr><td><span class="blk">Sicherheit der erkannten Klasse (%)</span></td><td>Wie sicher sich die KI ist, von 0 bis 100.</td></tr>
+      <tr><td><span class="blk">Sicherheit von [Klasse] (%)</span></td><td>Die Sicherheit für eine bestimmte Klasse.</td></tr>
+      <tr><td><span class="blk">Mindest-Sicherheit auf [60] % setzen</span></td><td>Ab wie viel Prozent die KI etwas „erkennt“. Höher heißt vorsichtiger.</td></tr>
+      <tr><td><span class="blk">Kamera an / aus</span></td><td>Schaltet Kamera und Erkennung ein oder aus.</td></tr>
+      <tr><td><span class="blk">Kamerabild zeigen / verstecken</span></td><td>Zeigt oder versteckt das kleine Kamerabild.</td></tr>
+      <tr><td><span class="blk">Modell geladen?</span></td><td>Ja, wenn ein Modell da ist.</td></tr>
+      <tr><td><span class="blk">Anzahl der Klassen</span> · <span class="blk">Name der Klasse [1]</span></td><td>Für Fortgeschrittene, zum Beispiel in Schleifen.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">Ideen zum Ausprobieren</h2>
+  <div class="ex">
+    <div class="card" style="--c:#3abbea"><h3>Der sprechende Gegenstand</h3><p>Zeige der Kamera einen Stift oder einen Becher, und die Figur sagt, was sie sieht.</p>
+      <div class="script"><span class="h">Wenn KI [Stift] erkennt</span><span class="m">sage „Das ist ein Stift!“</span></div></div>
+    <div class="card" style="--c:#f29d35"><h3>Springen mit den Armen</h3><p>Posenprojekt mit „Arme oben“ und „Arme unten“. Wenn du die Arme hebst, springt die Figur.</p>
+      <div class="script"><span class="h">Wenn KI [Arme oben] erkennt</span><span class="m">wiederhole 10 mal: ändere y um 10</span></div></div>
+    <div class="card" style="--c:#e31274"><h3>Die Ampel</h3><p>Zeige rote, gelbe und grüne Gegenstände. Die Figur reagiert mit „Stopp“ oder „Los“.</p>
+      <div class="script"><span class="h">Wenn KI [Rot] erkennt</span><span class="m">sage „Stopp!“</span></div></div>
+    <div class="card" style="--c:#99c328"><h3>Nur bei großer Sicherheit</h3><p>Die KI soll sich ganz sicher sein, bevor etwas passiert.</p>
+      <div class="script"><span class="h">Wenn Flagge angeklickt</span><span class="m">Mindest-Sicherheit auf 80 % setzen</span><span class="m">Kamera an</span></div></div>
+  </div>
+
+  <h2 class="sec">Wenn etwas nicht klappt</h2>
+  <details><summary>Die Kamera startet nicht</summary><p>Erlaube die Kamera für turbowarp.org: am iPad Einstellungen → Safari → Kamera → „Fragen“ oder „Erlauben“. Danach die Seite neu laden. Prüfe auch, ob der Haken „ohne Sandbox“ beim Laden der Erweiterung gesetzt war. Ohne ihn lädt die Erweiterung zwar, kann aber keine Kamera öffnen.</p></details>
+  <details><summary>„Modell aus Zwischenablage einfügen“ findet nichts</summary><p>Tippe in der KI-Werkstatt erst auf „Modell kopieren“ und danach sofort in Scratch auf den Block. Hast du in der Zwischenzeit etwas anderes kopiert, klappt es nicht. Ersatz: „Als Datei speichern“ und „Modell aus Datei laden“.</p></details>
+  <details><summary>Die KI rät nur Unsinn</summary><p>Das Modell ist nur so gut wie die Beispiele. Gehe zurück in die KI-Werkstatt, nimm mehr Beispiele auf (30 oder mehr, aus verschiedenen Blickwinkeln) und trainiere neu. Schicke dann das neue Modell an Scratch. Du kannst auch die Mindest-Sicherheit erhöhen.</p></details>
+  <details><summary>Beim Posenprojekt wird niemand erkannt</summary><p>Stelle das iPad auf und tritt so weit zurück, dass Kopf, Arme und Oberkörper im Bild sind. Sorge für gutes Licht. Im Kamerabild müssen Punkte und Linien an dir erscheinen.</p></details>
+  <details><summary>Das Fenster „KI-Werkstatt öffnen“ geht nicht auf</summary><p>Der Browser blockiert Pop-ups. Erlaube sie für turbowarp.org oder nimm den Weg über „Modell kopieren“.</p></details>
+  <details><summary>Kann ich mein Projekt auf scratch.mit.edu teilen?</summary><p>Nein. Eigene Erweiterungen funktionieren dort nicht. In TurboWarp kannst du das Projekt als Datei speichern und mit dem TurboWarp-Packager zu einer Webseite oder App machen.</p></details>
+  <details><summary>Und die Kamerabilder?</summary><p>Alles läuft in deinem Browser. Kamerabilder werden nicht verschickt. Nur die fertigen Erkennungsmodelle (MobileNet oder PoseNet) werden einmal aus dem Internet geladen.</p></details>
+  <details id="codeBox"><summary>Den Code der Erweiterung ansehen</summary>
+    <p>Falls das Kopieren nicht klappt, kannst du den Code hier markieren und selbst kopieren.</p>
+    <button class="btn sec" id="showCode" type="button">Code anzeigen</button>
+    <textarea id="codeArea" readonly hidden aria-label="Code der Erweiterung"></textarea></details>
+
+  <footer>MINT2Go · MINT erleben &nbsp;·&nbsp; Erweiterung für TurboWarp. TurboWarp und Scratch sind Projekte Dritter und stehen in keiner Verbindung zu MINT2Go.</footer>
+</div>
+
+<script>
+(function(){
+  var URL_JS = 'scratch/ki-werkstatt-erweiterung.js';
+  var cached = null;
+  function load(){
+    if (cached) return Promise.resolve(cached);
+    return fetch(URL_JS, { cache: 'no-cache' }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(function(t){ cached = t; return t; });
+  }
+  var note = document.getElementById('copyNote');
+  document.getElementById('copyCode').addEventListener('click', function(){
+    note.textContent = '';
+    load().then(function(code){
+      var done = function(ok){
+        note.textContent = ok ? '✓ Code kopiert. Jetzt in TurboWarp einfügen.' : 'Kopieren hat nicht geklappt. Öffne unten „Den Code der Erweiterung ansehen“.';
+        if (!ok){ document.getElementById('codeBox').open = true; showCode(); }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(function(){ done(true); }, function(){ done(false); }); }
+      else { done(false); }
+    }).catch(function(){ note.textContent = 'Der Code konnte nicht geladen werden. Prüfe das Internet oder nimm „Als Datei laden“.'; });
+  });
+  function showCode(){
+    load().then(function(code){
+      var ta = document.getElementById('codeArea'); ta.value = code; ta.hidden = false; ta.focus(); ta.select();
+    }).catch(function(){ document.getElementById('codeArea').value = 'Der Code konnte nicht geladen werden.'; document.getElementById('codeArea').hidden = false; });
+  }
+  document.getElementById('showCode').addEventListener('click', showCode);
+})();
+</script>
+</body>
+</html>
