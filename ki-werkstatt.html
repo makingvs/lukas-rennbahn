@@ -72,7 +72,7 @@
   .type p{color:var(--muted);font-size:18px;line-height:1.3}
   .type .go{background:var(--brand);color:var(--brand-ink);font-weight:800;font-size:20px;border-radius:99px;padding:10px 28px}
   .legal{color:var(--muted);font-size:16px;max-width:800px;line-height:1.45}
-  @media (max-height:680px){
+  @media (max-height:780px){
     .start{gap:8px;padding-top:6px;padding-bottom:6px}
     .start .m2g{width:84px}
     .start .lead{display:none}
@@ -154,11 +154,15 @@
     background:var(--c);color:var(--cf,#fff);border-radius:24px;flex-direction:column;gap:6px}
   .btn.hold:hover:not(:disabled){background:var(--c);filter:brightness(.94)}
   .hold:disabled{background:#eceff3;color:#8a92a8;font-size:20px}
+  .hold small{font-size:17px;font-weight:600;line-height:1.2;opacity:.92}
+  .ovl.flash{inset:0;background:#fff;opacity:0}
+  .ovl.flash.go{animation:flash .35s ease-out}
+  @keyframes flash{from{opacity:.8}to{opacity:0}}
   .hold .dot{width:20px;height:20px;border-radius:50%;background:var(--cf,#fff);opacity:.7;flex:none}
   .hold.on{filter:none;transform:scale(.985);box-shadow:inset 0 0 0 5px rgba(255,255,255,.9),0 0 0 6px var(--cl)}
   .hold.on .dot{background:#ff5252;opacity:1;animation:pulse .7s infinite alternate}
   @keyframes pulse{to{transform:scale(1.5)}}
-  @media (prefers-reduced-motion:reduce){.hold.on .dot,.ovl.rec i,.dots i,.spin{animation:none!important}}
+  @media (prefers-reduced-motion:reduce){.hold.on .dot,.ovl.rec i,.dots i,.spin,.ovl.flash.go{animation:none!important}}
   .tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
   .tool{min-height:76px;border:0;border-radius:16px;background:var(--blue-l);color:var(--blue-d);font-weight:700;font-size:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px}
   .tool svg{width:28px;height:28px}
@@ -317,6 +321,10 @@
   .sheet label{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:18px;color:var(--label)}
   .sheet input[type=number]{width:96px;padding:10px;border:2px solid var(--line);border-radius:10px;font-size:20px}
   .sheet input[type=checkbox]{width:30px;height:30px;accent-color:var(--brand-d);flex:none}
+  .mrow{display:flex;align-items:center;gap:16px}
+  .mrow .btn{flex:0 0 250px}
+  .mrow p{flex:1;font-size:17px;color:var(--label)}
+  @media (max-width:640px){.mrow{flex-direction:column;align-items:stretch;gap:6px}.mrow .btn{flex:none}}
   .sheet .row2{display:flex;gap:10px;flex-wrap:wrap}
   .sheet .row2 .btn{flex:1 1 180px}
   .note{font-size:16px;color:var(--muted);line-height:1.4}
@@ -370,6 +378,7 @@
       <div class="tx"><h2>Posenprojekt</h2><p>Zeig der KI Körperhaltungen. Sie lernt Arme, Beine und Kopf zu erkennen.</p><span class="go">Starten</span></div>
     </button>
   </div>
+  <button class="btn sec" id="btnLoadModel" type="button">Gespeichertes Modell hochladen</button>
   <p class="legal">Ein Bildungsprojekt im Design von MINT2Go, <b>nicht mit Teachable Machine oder Google verbunden</b>. Alles bleibt auf deinem Gerät, es werden keine Bilder verschickt.<br>
     <button class="linkbtn" id="btnInfoStart" type="button">Info, Lizenzen und Datenschutz</button> · <a href="scratch.html">So geht's mit Scratch (TurboWarp)</a></p>
 </main>
@@ -390,6 +399,8 @@
       <button class="iconbtn" id="btnMenu" type="button" aria-label="Menü" aria-haspopup="true" data-ic="menu"></button>
       <div class="dd" id="mainMenu" hidden>
         <button type="button" data-a="new">Neues Projekt</button>
+        <button type="button" data-a="save">Modell herunterladen</button>
+        <button type="button" data-a="load">Modell hochladen</button>
         <button type="button" data-a="help">Hilfe und Tipps</button>
         <button type="button" data-a="info">Info, Lizenzen und Datenschutz</button>
       </div>
@@ -406,6 +417,7 @@
         <div class="camfit">
           <div class="sq" id="stSq">
             <video id="stVideo" playsinline muted autoplay></video><canvas class="ov" id="stOv"></canvas>
+            <div class="ovl flash" id="stFlash"></div>
             <div class="ovl cd" id="stCd" hidden></div>
             <div class="ovl rec" id="stRec" hidden><i></i><span></span></div>
             <div class="ovl nop" id="stNop" hidden>Keine Person erkannt. Tritt etwas zurück, bis Kopf und Arme im Bild sind.</div>
@@ -428,7 +440,7 @@
           </div>
         </div>
         <p class="cnt" id="stCount"></p>
-        <button class="btn hold" id="stHold" type="button"><span class="dot"></span><span id="stHl"></span></button>
+        <button class="btn hold" id="stHold" type="button"><span class="dot"></span><span id="stHl"></span><small id="stHl2"></small></button>
         <div class="tools">
           <button class="tool" id="stFlip" type="button"><span data-ic="flip"></span>Wechseln</button>
           <button class="tool" id="stUp" type="button"><span data-ic="up"></span>Hochladen</button>
@@ -505,6 +517,7 @@
         <svg viewBox="0 0 120 80" aria-hidden="true"><rect x="6" y="6" width="108" height="68" rx="12" fill="none" stroke="#bdc1c6" stroke-width="3" stroke-dasharray="9 8"/><path d="M52 26l26 14-26 14z" fill="#bdc1c6"/></svg>
         <p>Die KI hat noch nicht geübt.</p>
         <button class="btn big" id="goTrain" type="button">Zum Üben</button>
+        <button class="btn sec" id="goLoad" type="button">Gespeichertes Modell hochladen</button>
       </div>
       <div id="prevBody" hidden>
         <div class="camcol">
@@ -547,7 +560,7 @@
           <div class="chips">
             <button class="chip" id="chSound" type="button" aria-pressed="false">Ton: aus</button>
             <button class="chip" id="chSpeak" type="button" aria-pressed="false">Sprache: aus</button>
-            <button class="chip act" id="chScratch" type="button">In Scratch nutzen</button>
+            <button class="chip act" id="chScratch" type="button">Speichern &amp; Laden</button>
           </div>
         </div>
         <div id="bars"></div>
@@ -556,6 +569,7 @@
   </div>
 </div>
 
+<input type="file" id="mdFile" accept=".json,application/json" hidden>
 <div id="loading" class="modal" hidden>
   <div class="loadbox" role="status"><div class="spin"></div><b id="loadTitle">Wird geladen …</b><p class="note" id="loadTxt"></p></div>
 </div>
@@ -573,7 +587,7 @@
   var alphaParam = parseFloat(new URLSearchParams(location.search).get('alpha'));
   var ALPHA = [0.25, 0.5, 0.75, 1].indexOf(alphaParam) >= 0 ? alphaParam : 0.25;
   var MAX_EX = 300, MIN_EX = 2, DEFAULTS = { epochs: 50, batch: 16, lr: 0.001 };
-  var MIN_PRESS_MS = 700;   // Jeder Druck auf den Aufnahme-Knopf nimmt mindestens so lange auf, auch ein kurzes Antippen
+  var BURST_MS = 500;   // Ein Tipp auf den Auslöser macht genau ein Foto. Wer ihn länger als so lange hält, macht Fotos hintereinander
   var ROUND_LR = 0.0015, ROUND_BATCH = 8;   // Beim Training Runde für Runde: etwas größere Schritte, damit man den Fortschritt sieht
   // Klassenfarben aus dem MINT2Go-Logo: c = Fläche, t = helle Tönung, d = dunkle Variante für Text, f = Schriftfarbe auf der Fläche
   var PAL = [
@@ -612,7 +626,7 @@
     pv: { input: 'cam' }, sound: false, speak: false, audio: null,
     lastWinner: -1, stable: 0, announced: -1, lastSay: 0,
     manual: false, last: null, lastGuess: -1, teachHist: [], barSig: '', teachSig: '',
-    tmode: 'auto', rounds: false, rd: null, rdStale: false, rdNote: ''
+    tmode: 'auto', rounds: false, rd: null, rdStale: false, rdNote: '', loaded: false
   };
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
   function byId(id){ for (var i = 0; i < S.classes.length; i++) if (S.classes[i].id === id) return S.classes[i]; return null; }
@@ -907,7 +921,7 @@
   /* ================= Aufnahme-Fläche (Schritt 1) ================= */
   function initStage(){
     ST.sq = $('#stSq'); ST.video = $('#stVideo'); ST.ov = $('#stOv'); ST.cd = $('#stCd'); ST.recb = $('#stRec'); ST.nop = $('#stNop');
-    ST.cover = $('#stCover'); ST.hold = $('#stHold'); ST.hl = $('#stHl'); ST.name = $('#stName'); ST.count = $('#stCount');
+    ST.cover = $('#stCover'); ST.hold = $('#stHold'); ST.hl = $('#stHl'); ST.hl2 = $('#stHl2'); ST.flash = $('#stFlash'); ST.name = $('#stName'); ST.count = $('#stCount');
     ST.thumbs = $('#stThumbs'); ST.warn = $('#stWarn'); ST.thint = $('#stThint'); ST.dots = $('#stDots'); ST.dd = $('#stDd'); ST.file = $('#stFile');
     ST.name.addEventListener('input', function(){ var c = byId(S.sel); if (!c) return; setText(c.ui.nm, ST.name.value.trim() || c.name); });
     ST.name.addEventListener('blur', function(){
@@ -930,12 +944,13 @@
   }
   function openRecSettings(){
     var rs = S.rs;
-    openDialog('<div class="top"><h2>Timer fürs Aufnehmen</h2>' + closeBtn() + '</div>' +
+    openDialog('<div class="top"><h2>Fotos aufnehmen</h2>' + closeBtn() + '</div>' +
+      '<p>Normalerweise macht ein <b>Tipp</b> auf den großen Knopf <b>ein Foto</b>. Wenn du den Knopf <b>gedrückt hältst</b>, macht die KI viele Fotos hintereinander. Mit dem Timer geht es auch von selbst:</p>' +
       '<div class="f">' +
-      '<label><span><input type="checkbox" id="rsD"> Countdown vor dem Start</span><span><input type="number" id="rsDv" min="1" max="10"> Sek.</span></label>' +
-      '<label><span><input type="checkbox" id="rsU"> Von selbst aufhören</span><span><input type="number" id="rsUv" min="1" max="30"> Sek.</span></label>' +
-      '<p class="note">Mit „Von selbst aufhören“ musst du den Knopf nicht halten: Tippen, in Position gehen, die KI nimmt von selbst auf. Das ist praktisch für Posen.</p>' +
-      '<label><span>Bilder pro Sekunde</span><span><input type="number" id="rsF" min="1" max="15"></span></label>' +
+      '<label><span><input type="checkbox" id="rsD"> Countdown vor dem Foto</span><span><input type="number" id="rsDv" min="1" max="10"> Sek.</span></label>' +
+      '<label><span><input type="checkbox" id="rsU"> Serie von selbst aufnehmen</span><span><input type="number" id="rsUv" min="1" max="30"> Sek.</span></label>' +
+      '<p class="note">Bei „Serie von selbst aufnehmen“ musst du den Knopf nicht halten: Tippen, in Position gehen, und die KI macht so lange Fotos hintereinander. Das ist praktisch für Posen.</p>' +
+      '<label><span>Fotos pro Sekunde (bei Serien)</span><span><input type="number" id="rsF" min="1" max="15"></span></label>' +
       '</div><button class="btn" type="button" data-close>Fertig</button>');
     $('#rsD').checked = rs.delayOn; $('#rsDv').value = rs.delay; $('#rsU').checked = rs.durOn; $('#rsUv').value = rs.dur; $('#rsF').value = rs.fps;
     function sync(){
@@ -972,21 +987,27 @@
   window.addEventListener('pointerup', releaseAny, true);
   window.addEventListener('pointercancel', releaseAny, true);
 
-  function holdText(){ return S.rs && S.rs.durOn ? 'Aufnehmen' : 'Halten zum Aufnehmen'; }
+  // Beschriftung des Auslösers: Zeile 1 sagt, was ein Tipp macht, Zeile 2, was sonst noch geht.
+  function holdLabels(){
+    var rs = S.rs; if (!rs) return ['Foto machen', ''];
+    if (rs.durOn) return ['Serie aufnehmen', (rs.delayOn ? 'Countdown, dann ' : 'Tippen: ') + rs.dur + ' Sek. lang Fotos'];
+    return ['Foto machen', rs.delayOn ? 'Nach ' + rs.delay + ' Sek. Countdown' : 'Halten für mehrere Fotos'];
+  }
   function updateRecUI(){
     if (!ST.hold) return;
     var c = byId(S.sel), R = S.rec, mine = !!(c && R && R.cid === c.id), now = performance.now();
-    var txt = holdText(), on = false, cd = '', rec = '';
-    if (!(S.stream && S.stream.active)) txt = 'Kamera ist aus';
+    var lab = holdLabels(), txt = lab[0], txt2 = lab[1], on = false, cd = '', rec = '';
+    if (!(S.stream && S.stream.active)){ txt = 'Kamera ist aus'; txt2 = ''; }
     else if (mine){
-      if (R.state === 'pending'){ var s = Math.max(1, Math.ceil((R.startAt - now) / 1000)); txt = 'Start in ' + s + ' …'; cd = String(s); }
+      if (R.state === 'pending'){ var s = Math.max(1, Math.ceil((R.startAt - now) / 1000)); txt = 'Start in ' + s + ' …'; txt2 = ''; cd = String(s); }
       else {
         on = true;
-        txt = S.rs.durOn ? 'Aufnahme: noch ' + Math.max(0, Math.ceil((R.endAt - now) / 1000)) + ' s' : 'Ich lerne …';
+        txt = S.rs.durOn ? 'Aufnahme: noch ' + Math.max(0, Math.ceil((R.endAt - now) / 1000)) + ' s' : (R.n > 1 ? 'Ich lerne …' : 'Foto!');
+        txt2 = R.n + (R.n === 1 ? ' Foto' : ' Fotos');
         rec = R.n + (R.n === 1 ? ' Beispiel' : ' Beispiele');
       }
     }
-    setText(ST.hl, txt); ST.hold.classList.toggle('on', on);
+    setText(ST.hl, txt); setText(ST.hl2, txt2); ST.hold.classList.toggle('on', on);
     ST.cd.hidden = !cd; if (cd) setText(ST.cd, cd);
     ST.recb.hidden = !on; if (on) setText($('span', ST.recb), rec);
     ST.nop.hidden = !(mine && on && S.type === 'pose' && R.miss >= 3);
@@ -1008,9 +1029,8 @@
   function releaseRec(c, pid){
     var R = S.rec; if (!R || R.cid !== c.id) return;
     if (pid !== undefined && R.pid !== -1 && pid !== R.pid) return;
-    if (!R.hold) return;                                  // Modus „Dauer“: Loslassen ändert nichts
-    if (R.state === 'pending'){ stopRec(); return; }       // vor dem Start losgelassen: abbrechen
-    R.released = true;                                     // die Schleife beendet nach der Mindestdauer
+    if (!R.hold) return;                                  // Modus „Serie von selbst“: Loslassen ändert nichts
+    R.released = true;                                     // Auch während des Countdowns: Danach kommt noch das eine Foto
   }
   function stopRec(){
     var R = S.rec; S.rec = null;
@@ -1038,14 +1058,18 @@
           if (now >= R.startAt) startActive(R); else { updateRecUI(); await sleep(50); continue; }
           now = performance.now();
         }
-        var held = now - R.pressedAt, minDone = held >= MIN_PRESS_MS && (R.n > 0 || held >= 2500);
-        if (R.hold ? (R.released && minDone) : now >= R.endAt){ stopRec(); break; }
+        var held = now - R.pressedAt;
+        // Gehalten: Das erste Foto kommt sofort. Danach ist Schluss, sobald losgelassen wird, auch bei einem kurzen Tipp.
+        // Erst wer länger als BURST_MS hält, macht weitere Fotos. Ohne Foto (zum Beispiel keine Person erkannt) wird bis zu 2,5 Sekunden weiter versucht.
+        if (R.hold ? (R.released && (R.n > 0 || held >= 2500)) : now >= R.endAt){ stopRec(); break; }
+        if (R.hold && R.n > 0 && held < BURST_MS){ await sleep(15); continue; }
         if (now < R.nextAt){ await sleep(15); continue; }
         var r = await extractLocked(ST.video);           // Das Ergebnis zählt auch, wenn inzwischen losgelassen wurde.
         R.nextAt = performance.now() + 1000 / S.rs.fps;
         if (r && r.f){
           if (!addExample(c, r.f, r.th)){ toast('Diese Klasse hat schon ' + MAX_EX + ' Beispiele.'); stopRec(); break; }
           R.n++; R.miss = 0;
+          if (R.n === 1) flashShot();
         } else if (r){ R.miss++; }
         else { R.notReady++; if (R.notReady === 25) toast('Die Kamera ist noch nicht bereit. Warte einen Moment.'); }
         if (r && r.pose) drawSkel(ST.ov, r.pose);
@@ -1053,6 +1077,11 @@
       }
     } catch (e) { console.warn(e); stopRec(); }
     recRunning = false;
+  }
+  // Kurzes Aufblitzen im Kamerabild: So sieht man, dass ein Foto gemacht wurde.
+  function flashShot(){
+    if (!ST.flash) return;
+    ST.flash.classList.remove('go'); void ST.flash.offsetWidth; ST.flash.classList.add('go');
   }
   async function idleSkeleton(){
     if (S.step !== 1 || !S.stream || S.type !== 'pose') return;
@@ -1090,7 +1119,7 @@
       if (S.training) S.rdStale = true;                    // Während einer Runde: danach von vorn anfangen
       else { disposeRounds(); S.rdNote = 'Neue Beispiele: Die KI fängt wieder von vorn an.'; }
     }
-    if (S.trained || S.head){ S.trained = false; renderPreview(); }
+    if (S.trained || S.head){ S.trained = false; S.loaded = false; renderPreview(); }
     if (S.manual) syncManual();
     refreshTrain();
   }
@@ -1110,7 +1139,7 @@
   }
   function refreshTrain(){
     var b = $('#btnTrain'), prob = trainProblem();
-    $('#btnDetails').disabled = !S.head;
+    $('#btnDetails').disabled = !S.head || S.loaded;
     $('#doneBox').hidden = !S.trained || S.manual;
     renderSummary(); refreshNav();
     if (S.manual){ renderStepper(); return; }
@@ -1173,6 +1202,7 @@
   function showDone(){
     var h = S.hist, a = h.acc.length ? h.acc[h.acc.length - 1] : 0, va = h.vacc.length ? h.vacc[h.vacc.length - 1] : null;
     var pc = Math.round(a * 100);
+    $('#doneBox .t1').textContent = 'Fertig geübt!';
     $('#ringTxt').textContent = pc + ' %'; $('#ringArc').style.strokeDashoffset = String(163.4 * (1 - Math.max(0, Math.min(1, a))));
     $('#doneTxt').textContent = va !== null ? 'Beim Üben richtig: ' + pc + ' %. Beim Test mit neuen Beispielen: ' + Math.round(va * 100) + ' %.' : 'Beim Üben richtig: ' + pc + ' %. Probiere die KI jetzt aus.';
   }
@@ -1220,7 +1250,7 @@
     if (S.head){ S.head.dispose(); }
     S.head = m; S.mu = mu; S.sigma = sigma; S.classOrder = act.map(function(c){ return c.id; });
     S.test = { X: Xte.map(norm), Y: Yte }; S.norm = norm;
-    S.training = false; S.trained = true; S.lastWinner = -1; S.announced = -1;
+    S.training = false; S.trained = true; S.loaded = false; S.lastWinner = -1; S.announced = -1;
     $('#trainProg').hidden = true; showDone(); refreshTrain(); renderPreview();
   }
 
@@ -1228,7 +1258,7 @@
   function renderPreview(){
     var ok = S.manual || (S.trained && S.head);
     $('#prevWait').hidden = !!ok; $('#prevBody').hidden = !ok;
-    $('#btnDetails').disabled = !S.head;
+    $('#btnDetails').disabled = !S.head || S.loaded;
     $('#prevBody').classList.toggle('manual', !!S.manual);
     $('#tYes').hidden = !S.manual; $('#tStats').hidden = !S.manual; $('#tHint').hidden = !S.manual; $('#rStrip').hidden = !S.rounds;
     setText($('#prevWait p'), S.rounds ? 'Übe zuerst eine Runde. Dann siehst du hier, wie die KI rät.' : 'Die KI hat noch nicht geübt.');
@@ -1379,7 +1409,7 @@
       var ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
       document.body.appendChild(ta); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} ta.remove();
     }
-    setText($('#sNote'), ok ? 'Kopiert! Wechsle zu Scratch und tippe auf den Block „Modell aus Zwischenablage einfügen“.' : 'Das Kopieren hat nicht geklappt. Nimm „Als Datei speichern“.');
+    setText($('#sNote'), ok ? 'Kopiert! Wechsle zu Scratch und tippe auf den Block „Modell aus Zwischenablage einfügen“.' : 'Das Kopieren hat nicht geklappt. Nimm „Modell herunterladen“.');
     toast(ok ? '✓ Modell kopiert' : 'Kopieren nicht möglich', 3000);
   }
   async function exportFile(){
@@ -1388,7 +1418,8 @@
     a.href = URL.createObjectURL(new Blob([JSON.stringify(p)], { type: 'application/json' }));
     a.download = 'ki-werkstatt-modell.json'; document.body.appendChild(a); a.click();
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
-    setText($('#sNote'), 'Gespeichert als „ki-werkstatt-modell.json“. In Scratch: Block „Modell aus Datei laden“.');
+    setText($('#sNote'), 'Heruntergeladen als „ki-werkstatt-modell.json“ (am iPad in der Dateien-App unter „Downloads“). Zum Laden: „Modell hochladen“. In Scratch: Block „Modell aus Datei laden“.');
+    toast('✓ Modell heruntergeladen', 3500);
   }
   async function exportSend(){
     var p = await buildExport(); if (!p) return;
@@ -1397,6 +1428,83 @@
       setText($('#sNote'), 'Gesendet! Wechsle zurück zu Scratch.'); toast('✓ An Scratch gesendet', 3000);
     } else setText($('#sNote'), 'Es gibt keine Verbindung zu Scratch. Nimm „Modell kopieren“.');
   }
+  /* ================= Modell laden (Upload) ================= */
+  // Liest eine Datei, die „Modell herunterladen“ erzeugt hat, und stellt das Modell wieder her.
+  // Die Datei enthält Klassen und Gelerntes, aber keine Bilder. Sie wird nur auf dem Gerät gelesen.
+  function b64f32(s){
+    var bin = atob(String(s)), u = new Uint8Array(bin.length), i;
+    for (i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    if (u.length % 4) throw new Error('Länge');
+    return new Float32Array(u.buffer);
+  }
+  function checkModel(p){
+    if (!p || p.kind !== 'ki-werkstatt-modell' || p.version !== 1) return 'Das ist keine Modell-Datei aus der KI-Werkstatt.';
+    if (p.art !== 'image' && p.art !== 'pose') return 'Die Art des Modells ist unbekannt.';
+    var n = Array.isArray(p.klassen) ? p.klassen.length : 0;
+    if (n < 2 || n > MAX_CLS) return 'Das Modell hat ' + n + ' Klassen. Erlaubt sind 2 bis ' + MAX_CLS + '.';
+    if (typeof p.dim !== 'number' || !(p.dim > 0 && p.dim <= 4096) || p.units !== 100) return 'Das Modell hat ein unbekanntes Format.';
+    return '';
+  }
+  function showLoadedDone(){
+    $('#doneBox .t1').textContent = 'Modell geladen!';
+    $('#ringTxt').textContent = '✓'; $('#ringArc').style.strokeDashoffset = '0';
+    $('#doneTxt').textContent = 'Es kommt aus einer Datei. Probiere es bei „Ausprobieren“ aus.';
+  }
+  function importModel(p, silent){
+    if (S.training){ toast('Warte, bis die KI fertig geübt hat.'); return false; }
+    var bad = checkModel(p);
+    if (!bad && p.art !== S.type) bad = 'Das ist ein ' + (p.art === 'pose' ? 'Posen' : 'Bild') + 'modell. Öffne dafür ein ' + (p.art === 'pose' ? 'Posenprojekt.' : 'Bildprojekt.');
+    if (!bad && (p.dim !== S.dim || p.mode !== S.mode)) bad = 'Das Modell passt nicht zu diesem Projekt (anderes Erkennungsmodell).';
+    var C = bad ? 0 : p.klassen.length, mu, w1, b1, w2, b2;
+    if (!bad){
+      try {
+        mu = b64f32(p.mu); w1 = b64f32(p.w1); b1 = b64f32(p.b1); w2 = b64f32(p.w2); b2 = b64f32(p.b2);
+        if (mu.length !== p.dim || w1.length !== p.dim * 100 || b1.length !== 100 || w2.length !== 100 * C || b2.length !== C || !(p.sigma > 0)) bad = 'Die Datei ist beschädigt.';
+      } catch (e) { bad = 'Die Datei ist beschädigt.'; }
+    }
+    if (bad){ toast(bad, 6000); return false; }
+    if (!silent && (S.head || S.classes.some(function(c){ return c.ex.length; })) && !confirm('Das geladene Modell ersetzt deine Klassen, Beispiele und die KI. Fortfahren?')) return false;
+    stopRec(); disposeRounds();
+    if (S.tmode !== 'auto') setMode('auto');
+    if (S.head){ S.head.dispose(); S.head = null; }
+    document.querySelectorAll('#classes .tile').forEach(function(t){ t.remove(); });
+    S.classes = []; ST.thumbs.innerHTML = ''; sumSig = '';
+    p.klassen.forEach(function(nm){ var c = addClass(); c.name = String(nm).slice(0, 24) || c.name; refreshTile(c); });
+    selectClass(S.classes[0].id);
+    var dim = p.dim, sigma = p.sigma, m = tf.sequential();
+    m.add(tf.layers.dense({ units: 100, activation: 'relu', inputShape: [dim] }));
+    m.add(tf.layers.dense({ units: C, activation: 'softmax' }));
+    m.setWeights([tf.tensor2d(w1, [dim, 100]), tf.tensor1d(b1), tf.tensor2d(w2, [100, C]), tf.tensor1d(b2)]);
+    S.head = m; S.mu = mu; S.sigma = sigma;
+    S.norm = function(f){ var o = new Float32Array(dim); for (var q = 0; q < dim; q++) o[q] = (f[q] - mu[q]) / sigma; return o; };
+    S.classOrder = S.classes.map(function(c){ return c.id; });
+    S.test = { X: [], Y: [] }; S.hist = { acc: [], vacc: [], loss: [], vloss: [] };
+    S.trained = true; S.loaded = true; S.lastWinner = -1; S.announced = -1; S.rdNote = '';
+    showLoadedDone(); refreshTrain();
+    $('#dlg').hidden = true;
+    if (S.step === 3) renderPreview(); else goStep(3);
+    toast('✓ Modell geladen', 3000);
+    return true;
+  }
+  function readModelFile(file){
+    return new Promise(function(res, rej){
+      if (file.size > 5e6){ rej(new Error('Zu groß')); return; }
+      var fr = new FileReader();
+      fr.onload = function(){ try { res(JSON.parse(fr.result)); } catch (e) { rej(e); } };
+      fr.onerror = function(){ rej(fr.error); };
+      fr.readAsText(file);
+    });
+  }
+  async function loadModelFile(file){
+    var p;
+    try { p = await readModelFile(file); }
+    catch (e) { toast('Die Datei konnte nicht gelesen werden. Wähle eine Modell-Datei (.json), die „Modell herunterladen“ erzeugt hat.', 7000); return; }
+    var bad = checkModel(p); if (bad){ toast(bad, 6000); return; }
+    var fromStart = $('#app').hidden;
+    if (fromStart){ await startProject(p.art); if ($('#app').hidden) return; }   // Von der Startseite: erst das passende Projekt öffnen
+    importModel(p, fromStart);
+  }
+  function pickModelFile(){ $('#mdFile').click(); }
   async function roundStep(n){
     if (S.training || !S.rounds || trainProblem()) return;
     if (!S.rd) S.rd = initRounds();
@@ -1414,7 +1522,7 @@
     } catch (e) { console.warn(e); toast('Beim Üben ist ein Fehler aufgetreten.'); }
     S.head = rd.model; S.mu = rd.mu; S.sigma = rd.sigma; S.norm = rd.norm; S.classOrder = rd.order; S.test = rd.test; S.hist = rd.hist;
     var first = !S.trained;
-    S.training = false; S.trained = true; S.lastWinner = -1; S.announced = -1;
+    S.training = false; S.trained = true; S.loaded = false; S.lastWinner = -1; S.announced = -1;
     if (S.rdStale){ disposeRounds(); S.trained = false; S.rdNote = 'Neue Beispiele: Die KI fängt wieder von vorn an.'; renderPreview(); }
     else if (first) renderPreview();
     refreshTrain();
@@ -1615,25 +1723,30 @@
   function openHelp(){
     openDialog(
       '<div class="top"><h2>Hilfe und Tipps</h2>' + closeBtn() + '</div>' +
-      '<ul><li><b>1 Sammeln:</b> Tippe links auf eine Klasse, zum Beispiel „Stift“ oder „Becher“. Halte den großen Knopf gedrückt und zeig der Kamera viele Beispiele.</li>' +
+      '<ul><li><b>1 Sammeln:</b> Tippe links auf eine Klasse, zum Beispiel „Stift“ oder „Becher“. Ein Tipp auf den großen Knopf macht ein Foto. Halte den Knopf gedrückt, dann macht die KI viele Fotos hintereinander.</li>' +
       '<li><b>2 Üben:</b> Die KI übt mit deinen Beispielen.</li>' +
       '<li><b>3 Ausprobieren:</b> Zeig der KI etwas Neues und sieh, wie sicher sie ist.</li></ul>' +
       '<h3>Tipps</h3><ul>' +
       '<li><b>Mehr Beispiele:</b> Nimm mindestens 20 pro Klasse auf, aus verschiedenen Blickwinkeln und Entfernungen.</li>' +
-      '<li><b>Posen:</b> Stell das iPad auf und tritt so weit zurück, dass Kopf, Arme und Oberkörper im Bild sind. Mit dem „Timer“ startet die Aufnahme von selbst.</li>' +
-      '<li><b>Klappt es nicht?</b> Probiere die KI bei anderem Licht oder Hintergrund aus und nimm dann mehr Beispiele auf.</li></ul>' +
+      '<li><b>Posen:</b> Stell das iPad auf und tritt so weit zurück, dass Kopf, Arme und Oberkörper im Bild sind. Mit dem „Timer“ gibt es einen Countdown, und die Serie startet von selbst.</li>' +
+      '<li><b>Klappt es nicht?</b> Probiere die KI bei anderem Licht oder Hintergrund aus und nimm dann mehr Beispiele auf.</li>' +
+      '<li><b>Modell behalten:</b> Im Menü oder bei „Ausprobieren“ unter „Speichern &amp; Laden“ kannst du dein Modell herunterladen und später wieder hochladen.</li></ul>' +
       '<p class="note">Die KI-Werkstatt ist dem Werkzeug „Teachable Machine“ nachempfunden, aber nicht mit Google verbunden und nur zu Bildungszwecken gebaut. Die Bilder bleiben auf deinem Gerät. Beim Start eines Projekts lädt die Seite Programme und ein fertiges Erkennungsmodell aus dem Internet. Mehr dazu unter „Info, Lizenzen und Datenschutz“ im Menü.</p>' +
       '<button class="btn" type="button" data-close>Verstanden</button>');
   }
-  function openScratch(){
+  // Modell speichern (Download), laden (Upload) und an Scratch geben
+  function openModel(){
     openDialog(
-      '<div class="top"><h2>In Scratch nutzen</h2>' + closeBtn() + '</div>' +
-      '<p>Schicke deine KI an Scratch (TurboWarp) und baue damit eigene Spiele. Die <a href="scratch.html" target="_blank" rel="noopener">Anleitung</a> zeigt, wie.</p>' +
-      '<div class="row2">' + (window.opener ? '<button class="btn" id="sSend" type="button">An Scratch senden</button>' : '') +
-      '<button class="btn" id="sCopy" type="button">Modell kopieren</button><button class="btn sec" id="sFile" type="button">Als Datei speichern</button></div>' +
-      '<p class="note" id="sNote"></p>');
+      '<div class="top"><h2>Modell speichern und laden</h2>' + closeBtn() + '</div>' +
+      '<div class="mrow"><button class="btn" id="mdSave" type="button">Modell herunterladen</button><p>Speichert dein Modell als Datei (ohne Bilder). Klassen und Gelerntes sind darin.</p></div>' +
+      '<div class="mrow"><button class="btn sec" id="mdLoad" type="button">Modell hochladen</button><p>Lädt ein gespeichertes Modell aus einer Datei. Es ersetzt deine Klassen und die KI.</p></div>' +
+      '<h3>In Scratch nutzen</h3>' +
+      '<div class="mrow">' + (window.opener ? '<button class="btn" id="sSend" type="button">An Scratch senden</button>' : '<button class="btn sec" id="sCopy" type="button">Modell kopieren</button>') +
+      '<p>Schicke das Modell an Scratch (TurboWarp) und baue damit eigene Spiele. Die <a href="scratch.html" target="_blank" rel="noopener">Anleitung</a> zeigt, wie.</p></div>' +
+      (window.opener ? '<div class="mrow"><button class="btn sec" id="sCopy" type="button">Modell kopieren</button><p>Zum Einfügen in Scratch, wenn „Senden“ nicht geht.</p></div>' : '') +
+      '<p class="note" id="sNote">Neue Beispiele und neues Üben ersetzen ein geladenes Modell wieder.</p>');
     if ($('#sSend')) $('#sSend').addEventListener('click', exportSend);
-    $('#sCopy').addEventListener('click', exportCopy); $('#sFile').addEventListener('click', exportFile);
+    $('#sCopy').addEventListener('click', exportCopy); $('#mdSave').addEventListener('click', exportFile); $('#mdLoad').addEventListener('click', pickModelFile);
   }
 
   /* ================= Info, Lizenzen und Datenschutz ================= */
@@ -1685,6 +1798,7 @@
       '<p>Ein Bildungsprojekt im Design von MINT2Go, in dem Kinder eine kleine KI selbst trainieren. Sie ist <b>nicht mit Teachable Machine oder Google verbunden</b> und wurde <b>nur zu Bildungszwecken</b> gebaut. Sie wird ohne Gewähr bereitgestellt, und die KI kann Fehler machen.</p>' +
       '<h3>Datenschutz</h3>' +
       '<ul><li><b>Bleibt auf dem Gerät:</b> Kamerabilder, Beispiele, Klassennamen und trainierte KIs. Die Seite sendet nichts davon ins Internet, speichert nichts im Browser und setzt keine Cookies.</li>' +
+      '<li><b>Speichern und Laden:</b> „Modell herunterladen“ legt eine Datei auf dem Gerät an. Sie enthält die Klassen und das Gelernte, aber keine Bilder. „Modell hochladen“ liest eine solche Datei nur auf dem Gerät. Die Seite verschickt die Datei nicht.</li>' +
       '<li><b>Wird geladen:</b> Beim Öffnen die Seite und die Logos (GitHub Pages), beim Start eines Projekts die Programme (jsDelivr) und das fertige Erkennungsmodell (Google, Kaggle). Das sind je nach Projektart nur wenige Megabyte.</li>' +
       '<li><b>Verbindungsdaten:</b> Diese Anbieter sehen beim Abruf technische Daten wie die IP-Adresse, den Browser und die Uhrzeit. Dazu gelten ihre eigenen Datenschutzerklärungen (siehe unten).</li>' +
       '<li><b>Scratch:</b> Wer das Modell an Scratch (TurboWarp) weitergibt, nutzt TurboWarp mit dessen Datenschutzregeln. Die Erweiterung lädt dieselben Programme und Modelle.</li></ul>';
@@ -1773,6 +1887,7 @@
   $('#mainMenu').addEventListener('click', function(e){
     var a = e.target.getAttribute && e.target.getAttribute('data-a'); if (!a) return; closeMenus();
     if (a === 'new') newProject(); else if (a === 'help') openHelp(); else if (a === 'info') openInfo();
+    else if (a === 'save') exportFile(); else if (a === 'load') pickModelFile();
   });
   document.querySelectorAll('#stepper .tab').forEach(function(t){ t.addEventListener('click', function(){ goStep(parseInt(t.getAttribute('data-s'), 10)); }); });
   $('#s1Next').addEventListener('click', function(){ goStep(2); });
@@ -1793,7 +1908,10 @@
   $('#rReset').addEventListener('click', function(){ if (S.training) return; disposeRounds(); S.trained = false; S.rdNote = 'Die KI fängt von vorn an.'; renderPreview(); refreshTrain(); });
   $('#btnDetails').addEventListener('click', openDetails);
   $('#btnAdv').addEventListener('click', openAdv);
-  $('#chScratch').addEventListener('click', openScratch);
+  $('#chScratch').addEventListener('click', openModel);
+  $('#btnLoadModel').addEventListener('click', pickModelFile);
+  $('#goLoad').addEventListener('click', pickModelFile);
+  $('#mdFile').addEventListener('change', function(){ var f = $('#mdFile').files[0]; $('#mdFile').value = ''; if (f) loadModelFile(f); });
   $('#tYes').addEventListener('click', function(){ if (S.lastGuess >= 0) teach(S.lastGuess); else toast('Die KI hat noch nichts geraten. Tippe unten auf die richtige Klasse.', 3500); });
   $('#tReset').addEventListener('click', function(){ S.teachHist = []; renderTeachStats(); });
   $('#inCam').addEventListener('click', function(){ setPvInput('cam'); });
@@ -1816,7 +1934,7 @@
   setInterval(updateRecUI, 150);
   loop();
 
-  window.__ki = { goStep: goStep, selectClass: selectClass, fitSquares: fitSquares, S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec, setMode: setMode, roundStep: roundStep, teach: teach, knnProbs: knnProbs, buildExport: buildExport, poseFeat: poseFeat, predict: predict };
+  window.__ki = { loadModelFile: loadModelFile, importModel: importModel, goStep: goStep, selectClass: selectClass, fitSquares: fitSquares, S: S, addClass: addClass, extract: extract, train: train, startProject: startProject, addExample: addExample, beginRec: beginRec, setMode: setMode, roundStep: roundStep, teach: teach, knnProbs: knnProbs, buildExport: buildExport, poseFeat: poseFeat, predict: predict };
 })();
 </script>
 </body>
